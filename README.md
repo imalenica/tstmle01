@@ -1,6 +1,6 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-R/`tsTMLE`
+R/`tstmle`
 ==========
 
 \[\[Travis-CI Build Status\] \[\[AppVeyor Build Status\] \[\[Coverage Status\]\[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)\](<http://opensource.org/licenses/MIT>)
@@ -17,22 +17,22 @@ This package implements targeted maximum likelihood estimation of causal effects
 Installation
 ------------
 
-You can install a stable release of `cvma` from GitHub via [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with:
+You can install a stable release of `tstmle` from GitHub via [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with:
 
 ``` r
-devtools::install_github("podTockom/tsTMLE")
+devtools::install_github("podTockom/tstmle")
 ```
 
 In the future, the package will be available from [CRAN](https://cran.r-project.org/) via
 
 ``` r
-install.packages("tsTMLE")
+install.packages("tstmle")
 ```
 
 Issues
 ------
 
-If you encounter any bugs or have any specific feature requests, please [file an issue](https://github.com/podTockom/tsTMLE/issues).
+If you encounter any bugs or have any specific feature requests, please [file an issue](https://github.com/podTockom/tstmle/issues).
 
 Example
 -------
