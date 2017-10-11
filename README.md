@@ -3,8 +3,6 @@
 R/`tstmle`
 ==========
 
-\[\[Travis-CI Build Status\] \[\[AppVeyor Build Status\] \[\[Coverage Status\]\[![MIT license](http://img.shields.io/badge/license-MIT-brightgreen.svg)\](<http://opensource.org/licenses/MIT>)
-
 > Causal Effect based on a Single Time Series
 
 **Authors:**
