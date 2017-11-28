@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+*.html
+vignettes/*.html
+.ipynb_checkpoints
+
