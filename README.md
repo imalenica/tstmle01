@@ -34,9 +34,9 @@ time series models, group sequential adaptive designs, and even
 independent and identically distributed data where the summary measure
 of the past is simply the empty set. For details on the theoretical
 underpinnings of the approach, the interested reader may consider
-consulting (**???**). For a general introduction to the targeted
-learning methodology and statistical causal inference, please consult
-van der Laan and Rose (2011) and van der Laan and Rose (2017).
+consulting van der Laan (2017). For a general introduction to the
+targeted learning methodology and statistical causal inference, please
+consult van der Laan and Rose (2011) and van der Laan and Rose (2017).
 
 -----
 
@@ -113,6 +113,11 @@ See below for details:
 -----
 
 ## References
+
+van der Laan, Mark J. 2017. “Online Targeted Maximum Likelihood
+Estimation of Causal Effects Based on Observing a Single Time Series.”
+In *Targeted Learning in Data Science: Causal Inference for Complex
+Longitudinal Studies*, 263–97. Springer Science & Business Media.
 
 van der Laan, Mark J, and Sherri Rose. 2011. *Targeted Learning: Causal
 Inference for Observational and Experimental Data*. Springer Science &
