@@ -1,12 +1,34 @@
 Package: tstmle
-Type: Package
-Title: Single time series causal effects
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Title: Targeted Maximum Likelihood Estimation of Causal Effects of Interventions
+    on Single Time Series
+Version: 0.0.1
+Authors@R: c(
+    person("Ivana", "Malenica", email = "imalenica@berkeley.edu",
+           role = c("aut", "cre")),
+    person("Nima", "Hejazi", email = "nhejazi@berkeley.edu",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-7127-2789")),
+    person("Mark", "van der Laan", email = "laan@berkeley.edu",
+           role = "aut")
+  )
+Description: Targeted learning...
+Depends: R (>= 3.2.0)
+Imports:
+    stats,
+    stringr,
+    condensier,
+    sl3
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+Remotes:
+    github::osofr/condensier,
+    github::jeremyrcoyle/sl3
+License: MIT + file LICENSE
+URL: https://github.com/podTockom/tstmle
+BugReports: https://github.com/podTockom/tstmle/issues
 Encoding: UTF-8
 LazyData: true
+VignetteBuilder: knitr
 RoxygenNote: 6.0.1.9000

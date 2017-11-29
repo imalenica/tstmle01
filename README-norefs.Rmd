@@ -1,6 +1,5 @@
 ---
-output: rmarkdown::github_document
-bibliography: README-refs.bib
+output: rmarkdown::md_document
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -37,10 +36,7 @@ This general formulation of the statistical estimation problem subsumes many
 other important estimation problems, including but not limited to classical time
 series models, group sequential adaptive designs, and even independent and
 identically distributed data where the summary measure of the past is simply the
-empty set. For details on the theoretical underpinnings of the approach, the
-interested reader may consider consulting @vdl2017online. For a general
-introduction to the targeted learning methodology and statistical causal
-inference, please consult @vdl2011targeted and @vdl2017targeted.
+empty set.
 
 ---
 
@@ -113,8 +109,4 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
----
-
-## References
 
