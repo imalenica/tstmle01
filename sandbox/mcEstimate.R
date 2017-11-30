@@ -7,12 +7,12 @@
 #' @param t Outcome time point of interest 
 #' @param Anode Intervention node.
 #' @param intervention Specify g^*, of P(A|past).   
+#' @param MC Monte Carlo sampling.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{fit}{Fit objects for each part of the likelihood.}
-#'            
-#'
+#' \item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
+#' \item{outcome}{Outcome at time t for each MC interation.}
 #'
 #' @export
 #'
