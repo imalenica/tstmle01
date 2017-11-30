@@ -34,11 +34,11 @@
 Assume the end time, $\tau=10$ and we start with binaries $W(0),A(0),Y(0).$
 From there,
 
-$W(t)$ depends on $Y(t-1),A(t-1)$ 
+$W(t)$ depends on $C_w(t) = (Y(t-1),A(t-1))$
 
-$A(t)$ depends on $W(t),Y(t-1)$ 
+$A(t)$ depends on $C_a(t) = (W(t),Y(t-1))$ 
 
-$Y(t)$ depends on $(A(t),W(t))$ 
+$Y(t)$ depends on $C_y(t) = (A(t),W(t))$ 
 
 \section*{Step 2: Estimate the W,A,Y mechanisms which determine the likelihood}
 
@@ -52,13 +52,20 @@ estimates and likewise for $W(t)$ and $A(t)$.
 \section*{Step 3: Compute the estimate}
 
 Perform monte-carlo sampling on the initial estimates to estimate
-$EY_{g^{*}}$.
+$EY_{g^{*}}$.  Let us a assume we have fit the following functions from Step 2:
+
+$W(t) = rbern(f_w(C_w(t))$
+
+$A(t) = rbern(f_a(C_a(t))$
+
+$Y(t) = rbern(f_y(C_y(t))$
+
 \begin{enumerate}
-\item sample a W(1) by choosing a random binomial based on the past, 
-\item Interve on A(1) to set it to 1, 
-\item Continue with random binomials until the outcome, according to the
-initial estimates.
-\item repeat steps 1 to 3 many times and average to get the estimate
+\item sample W(1) as a random bernouilli based on $C_w(1)$
+\item Interve on A(1) to set it to 1 (for the remaining time points we will sample a random bernoulli based on $C_a(t)$)
+\item sample Y(1) as a random bernouilli based on $C_y(1)$ 
+\item repeat steps 1 to 3 until you sample the outcome of interest, $Y_{g^*}(100)$
+\item repeat steps 1 to 4 many times and average to get the mean outcome under the current estimated model
 \end{enumerate}
 
 \section*{Step 4: Compute the EIC and Clever Covariate}
@@ -91,14 +98,10 @@ compute
 $H_{y(s)}(C_{y}(i))=\mathbb{E}[Y_{g^{*}}\mid Y(s)=1,C_{y}(s)=C_{y}(i)]-\mathbb{E}[Y_{g^{*}}\mid Y(s)=0,C_{y}(s)=C_{y}(i)]$ 
 
 This will take montecarlo sampling using the binaries already estimated
-in step 2. For each expectation, start with generating $W(s+1)$,
-then $A(s+1)$ etc until the outcome at time, $\tau=100$. Do this
-a lot of times (start with maybe 1000 if it takes a while). Then average
-the resulting differences. The clever covariates: $\frac{h_{c_{y}(s)}^{*}(C_{y}(i))}{\bar{h}_{c_{y}}(C_{y}(i))}$
-are accomplished via page 327, which entails generating B outcomes
+in step 2. This will be the same as outlined in Step 3, except for each expectation, start with generating $W(s+1)$, then $A(s+1)$ etc until the outcome at time, $\tau=100$. Do this
+a lot of times. Then average the resulting differences. The clever covariates: $\frac{h_{c_{y}(s)}^{*}(C_{y}(i))}{\bar{h}_{c_{y}}(C_{y}(i))}$ are accomplished via page 327, which entails generating B outcomes
 under intervention and not under intervention. Again, we just montecarlo
-sample to generate these observations, given our previous estimate
-of the distribution. We also (as it says in the book) need not apply
+sample as in step 2, except save the entire observation, $O^N$. We also (as it says in the book) need not apply
 logistic regression here as we can do it nonparametrically. Now store
 $H_{y(s)}(C_{y}(i))\frac{h_{c_{y}(s)}^{*}(C_{y}(i))}{\bar{h}_{c_{y}}(C_{y}(i))}$.
 Concurrently, do the same thing for $H_{g(s)}(C_{a}(i))=\mathbb{E}[Y_{g^{*}}\mid W(s)=1,C_{a}(s)=C_{a}(i)]-\mathbb{E}[Y_{g^{*}}\mid W(s)=0,C_{a}(s)=C_{a}(i)]$
@@ -118,9 +121,9 @@ end outer loop
 
 \section*{Step 4: check tolerance}
 
-compute the sample mean of $\bar{D}^{N}(O)$ and see if below $\frac{\sigma}{N}$.
+compute the sample mean of $\bar{D}^{N}(O)$ and see if below $\frac{\hat{\sigma}}{N}$.
 If so, your last estimate is used as well as the influence curve $\bar{D}^{N}(O(i))$
-to get inference. Otherwise go to Step 5. 
+to get inference. Otherwise go to Step 5. We note, that $hat{\sigma}$ is just the sample standard deviation of the influence curve we computed. Each term of the influence curve, $\bar{D}^N(\bar{O}_i)$, has mean 0, conditioned on the past, $\bar{O}_{i-1}$ so we just need sum the squares of each term as an estimate of the conditional variance as given by the Martingale Central Limit Theorem.  
 
 \section*{Step 5: Run the TMLE and compute estimate}
 
