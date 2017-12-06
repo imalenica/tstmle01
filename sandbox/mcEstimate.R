@@ -4,11 +4,14 @@
 #' under specified intervention and under the estimated mechanism. 
 #' 
 #' @param fit \code{fit} object obtained by \code{initEst}. 
-#' @param start Start generating Monte Carlo estimates from this point O_i. The earliest time point is 1.
+#' @param start Start generating Monte Carlo estimates from this point O_i. The earliest time point is 1. For the clever covariate, this is also our s.
 #' @param node Start generating Monte Carlo estimates from O_i node W,A or Y.
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.  
+#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions. 
+#' @param lag This is an user impossed dependency lag necessary for the calculation of the clever covariate in the targeting step. 
+#' It refers to O_i, and it is of the same dimension as the actual C(i), but further in the past.
+#' Default is 1. Also, note that lag should be equal or smaller than start.   
 #' @param MC How many Monte Carlo samples should be generated.
 #'
 #' @return An object of class \code{tstmle}.
@@ -19,18 +22,40 @@
 #' @export
 #'
 
-mcEst <- function(fit, start, node, t, Anode, intervention, MC) {
+mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC) {
 
   data<-fit$data
   
   #How many in a batch:
   step<-length(grep('_0', row.names(data), value=TRUE))
+
+  #Impose artifical order (C(i)) for the clever covariate calculation. 
+  #Should default to whatever was estimated in initEst()
   
-  #Starts from time 1:
-  data_lag<-fit$lag_data
-  data_lag<-data.frame(data_lag[,-1])
-  data_lag<-data_lag[1:(t*step),]
-  estNames<-row.names(data_lag)
+  if(lag==1){
+    data_lag<-fit$lag_data
+    data_lag<-data.frame(data_lag[,-1])
+    data_lag<-data_lag[1:(t*step),]
+    estNames<-row.names(data_lag) 
+  }else{
+    
+    #This is ok under the assumption orders are the same dimension.
+    #TO DO: Change this to an option where we can have varying dimensions for W,A,Y.
+    res<-lapply((1+step*lag):(fit$freqW+step*lag), function(x) {Lag(data[,1], x)})
+    res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
+    
+    data_est_full<-cbind.data.frame(data=data,res)
+    
+    #Drop time 0 for estimation
+    cc<-complete.cases(data_est_full)
+    data_est<-data_est_full[cc,]
+    data_lag<-data.frame(data_est[-1,])
+    data_lag<-data.frame(data_lag[,-1])
+    
+    #Now have to take into account it does not start at 1...
+    data_lag<-data_lag[1:((t*step)-(lag*step)),]
+    estNames<-row.names(data_lag) 
+  }
   
   #get actual index of Anode (based on data_lag)
   Anode<-Anode*step-1
@@ -39,8 +64,8 @@ mcEst <- function(fit, start, node, t, Anode, intervention, MC) {
   #(right now, start is set to be the batch, not actual index)
   start<-(start-1)*step+1
   
-  #Later on will need to include more Ws
-  #This should be parallelized 
+  #TO DO: Later on will need to include more Ws
+  #TO DO: This should be parallelized 
   outcome<-matrix(nrow = MC, ncol = 1)
   data_lag_origin<-data_lag
   
@@ -60,7 +85,10 @@ mcEst <- function(fit, start, node, t, Anode, intervention, MC) {
     for(i in seq(start,nrow(data_lag),step)){
       
       #Possibly need to skip the update of W and A at the first iteration, 
-      #depending on from which node we start.
+      #depending on from which node we start. Hence the need for iter and ommitting some nodes.
+      
+      #Possibly need to condition on earlier time points for calculating our clever covariate. 
+      #This is our i in the clever covariate. 
       
       if(iter==1){
         
