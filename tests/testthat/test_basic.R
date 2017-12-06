@@ -10,7 +10,7 @@ mcEst_int <- mcEst(fit, start=1, node="W", t=20, Anode=12, intervention=1, MC=10
 mcEst_int$estimate
 
 #No intervention
-mcEst_noint <- mcEst(fit, t=20, Anode=12, intervention=NULL, MC=1000)
+mcEst_noint <- mcEst(fit, start=1, node="W", t=20, Anode=12, intervention=NULL, MC=1000)
 mcEst_noint$estimate
 
 

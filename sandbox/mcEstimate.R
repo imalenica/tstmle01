@@ -6,9 +6,9 @@
 #' @param fit \code{fit} object obtained by \code{initEst}. 
 #' @param start Start generating Monte Carlo estimates from this point O_i. The earliest time point is 1.
 #' @param node Start generating Monte Carlo estimates from O_i node W,A or Y.
-#' @param t Outcome time point of interest. 
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past).   
+#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.  
 #' @param MC How many Monte Carlo samples should be generated.
 #'
 #' @return An object of class \code{tstmle}.
@@ -35,6 +35,10 @@ mcEst <- function(fit, start, node, t, Anode, intervention, MC) {
   #get actual index of Anode (based on data_lag)
   Anode<-Anode*step-1
   
+  #Get actual index for start, depended on W.
+  #(right now, start is set to be the batch, not actual index)
+  start<-(start-1)*step+1
+  
   #Later on will need to include more Ws
   #This should be parallelized 
   outcome<-matrix(nrow = MC, ncol = 1)
@@ -49,41 +53,123 @@ mcEst <- function(fit, start, node, t, Anode, intervention, MC) {
     
     data_lag<-data_lag_origin
     
+    #Keep track where we are in the loop
+    iter<-1
+    
+    #i always dependent on W iterations. Make everything offset of W
     for(i in seq(start,nrow(data_lag),step)){
       
-      newW<-rbinom(1,1,plogis(predict(fit$W, data_lag[i,], type="response")))
-      #Update for A
-      data_lag[(i+1),1]<-newW
-      if(i != 1){
-        #Update for A
-        data_lag[(i+1),2]<-newY
-      }
+      #Possibly need to skip the update of W and A at the first iteration, 
+      #depending on from which node we start.
       
-      if(is.null(intervention)){
-        newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
-        #Update for Y
-        data_lag[(i+2),2]<-newW
-        data_lag[(i+2),1]<-newA
-      }else if(!is.null(intervention)){
-        if((i+1) == Anode){
-          newA<-rbinom(1,1,intervention)
-          #Update for Y
-          data_lag[(i+2),2]<-newW
-          data_lag[(i+2),1]<-newA
-        }else{
-          newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
-          #Update for Y
-          data_lag[(i+2),2]<-newW
-          data_lag[(i+2),1]<-newA
+      if(iter==1){
+        
+        if(node=="A"){
+          
+          #Start at A.
+          if(is.null(intervention)){
+            newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+            #Update for Y
+            data_lag[(i+2),1]<-newA
+          }else if(!is.null(intervention)){
+            if((i+1) == Anode){
+              newA<-rbinom(1,1,intervention)
+              #Update for Y
+              data_lag[(i+2),1]<-newA
+            }else{
+              newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+              #Update for Y
+              data_lag[(i+2),1]<-newA
+            }
+          }
+          
+          newY<-rbinom(1,1,plogis(predict(fit$Y, data_lag[i+2,], type="response")))
+          #Update for next W
+          data_lag[(i+3),2]<-newA
+          data_lag[(i+3),1]<-newY
+          
+          iter<-iter+1
+          
+        }else if(node=="Y"){
+          
+          #Now we skip both W and A, start generating MC draws from Y.
+          newY<-rbinom(1,1,plogis(predict(fit$Y, data_lag[i+2,], type="response")))
+          #Update for next W
+          data_lag[(i+3),1]<-newY
+          
+          iter<-iter+1
+        }else if(node=="W"){
+          
+          #Don't skip anything, start with W.
+          newW<-rbinom(1,1,plogis(predict(fit$W, data_lag[i,], type="response")))
+          #Update for A
+          data_lag[(i+1),1]<-newW
+          
+          if(is.null(intervention)){
+            newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+            #Update for Y
+            data_lag[(i+2),2]<-newW
+            data_lag[(i+2),1]<-newA
+          }else if(!is.null(intervention)){
+            if((i+1) == Anode){
+              newA<-rbinom(1,1,intervention)
+              #Update for Y
+              data_lag[(i+2),2]<-newW
+              data_lag[(i+2),1]<-newA
+            }else{
+              newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+              #Update for Y
+              data_lag[(i+2),2]<-newW
+              data_lag[(i+2),1]<-newA
+            }
+          }
+          
+          newY<-rbinom(1,1,plogis(predict(fit$Y, data_lag[i+2,], type="response")))
+          #Update for next W
+          #In the last iteration this will be NA... This is ok for now, just one more row.
+          data_lag[(i+3),2]<-newA
+          data_lag[(i+3),1]<-newY
+          
+          iter<-iter+1
+          
         }
-         }
-
-      newY<-rbinom(1,1,plogis(predict(fit$Y, data_lag[i+2,], type="response")))
-      #Update for next W
-      #In the last iteration this will be NA... This is ok for now, just one more row.
-      data_lag[(i+3),2]<-newA
-      data_lag[(i+3),1]<-newY
-      
+        }else{
+          
+          #For later iterations, do as always.
+          #MC draws start from "start" and W node.
+          newW<-rbinom(1,1,plogis(predict(fit$W, data_lag[i,], type="response")))
+          #Update for A
+          data_lag[(i+1),1]<-newW
+          data_lag[(i+1),2]<-newY
+          
+          if(is.null(intervention)){
+            newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+            #Update for Y
+            data_lag[(i+2),2]<-newW
+            data_lag[(i+2),1]<-newA
+          }else if(!is.null(intervention)){
+            if((i+1) == Anode){
+              newA<-rbinom(1,1,intervention)
+              #Update for Y
+              data_lag[(i+2),2]<-newW
+              data_lag[(i+2),1]<-newA
+            }else{
+              newA<-rbinom(1,1,plogis(predict(fit$A, data_lag[i+1,], type="response")))
+              #Update for Y
+              data_lag[(i+2),2]<-newW
+              data_lag[(i+2),1]<-newA
+            }
+          }
+          
+          newY<-rbinom(1,1,plogis(predict(fit$Y, data_lag[i+2,], type="response")))
+          #Update for next W
+          #In the last iteration this will be NA... This is ok for now, just one more row.
+          data_lag[(i+3),2]<-newA
+          data_lag[(i+3),1]<-newY
+          
+          iter<-iter+1
+          
+        }
     }
     
     outcome[B,]<-newY
