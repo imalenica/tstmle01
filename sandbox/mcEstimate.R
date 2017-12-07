@@ -11,7 +11,7 @@
 #' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions. 
 #' @param lag This is an user impossed dependency lag necessary for the calculation of the clever covariate in the targeting step. 
 #' It refers to O_i, and it is of the same dimension as the actual C(i), but further in the past.
-#' Default is 1. Also, note that lag should be equal or smaller than start.   
+#' Default is 0, meaning that it starts right after the node in question. Also, note that lag should be equal or smaller than start.   
 #' @param MC How many Monte Carlo samples should be generated.
 #'
 #' @return An object of class \code{tstmle}.
@@ -32,19 +32,37 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
   #Impose artifical order (C(i)) for the clever covariate calculation. 
   #Should default to whatever was estimated in initEst()
   
-  if(lag==1){
-    data_lag<-fit$lag_data
+  if(lag<0){
+    #If lag is negative, move the time series up w.r.t. reference
+    
+    #This gives further up lag first
+    res<-lapply((step*lag+1):(fit$freqW+step*lag), function(x) {Lag(data[,1], x)})
+    res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
+    
+    #TO DO: Make this more general later on. Easy
+    res<-res[,c(2,1)]
+    
+    data_est_full3<-cbind.data.frame(data=data,res)
+    
+    #Drop time 0 for estimation
+    cc<-complete.cases(data_est_full)
+    data_est<-data_est_full[cc,]
+    data_lag<-data.frame(data_est[-1,])
     data_lag<-data.frame(data_lag[,-1])
-    data_lag<-data_lag[1:(t*step),]
+    
+    #Now have to take into account it does not start at 1...
+    data_lag<-data_lag[1:((t*step)-(lag*step)),]
     estNames<-row.names(data_lag) 
-  }else{
+  }else if(lag>=0){
     
     #This is ok under the assumption orders are the same dimension.
+    #Note that "lags" in the clever covariate are defined by the size of the "step".
     #TO DO: Change this to an option where we can have varying dimensions for W,A,Y.
+    
     res<-lapply((1+step*lag):(fit$freqW+step*lag), function(x) {Lag(data[,1], x)})
     res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
     
-    data_est_full<-cbind.data.frame(data=data,res)
+    data_est_full3<-cbind.data.frame(data=data,res)
     
     #Drop time 0 for estimation
     cc<-complete.cases(data_est_full)
