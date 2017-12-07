@@ -28,7 +28,7 @@
 mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, init=FALSE, returnMC=FALSE) {
 
   data<-fit$data
-  
+
   #How many in a batch:
   step<-length(grep('_0', row.names(data), value=TRUE))
 
@@ -97,8 +97,8 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   res_0<-matrix(nrow=MC,ncol=1)
   
   #Prepare to return all MCs (up to time t generated draws)
-  retMC<-matrix(nrow = nrow(data_lag), ncol=MC)
-  row.names(retMC)<-row.names(data_lag_origin) 
+  retMC<-matrix(nrow = (nrow(data_lag)+step), ncol=MC)
+  row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
 
   for(B in 1:MC){
     
@@ -227,8 +227,21 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     }
     
     outcome[B,]<-newY
+    
     if(returnMC==TRUE){
-      retMC[,B]<-data_lag[-1,1]
+      data_lag<-data_lag[-1,1]
+      #Collect changed part of the series (from start until the end)
+      if(node=="W"){
+        retMC[((start+step):nrow(retMC)),B]<-data_lag[(start:length(data_lag))]
+        retMC[(1:(start+step-1)),B]<-data[(1:(start+step-1)),1]
+      }else if(node=="A"){
+        retMC[((start+step+1):nrow(retMC)),B]<-data_lag[((start+1):length(data_lag))]
+        retMC[(1:(start+step)),B]<-data[(1:(start+step)),1]
+      }else if(node=="Y"){
+        retMC[((start+step+2):nrow(retMC)),B]<-data_lag[((start+2):length(data_lag))]
+        retMC[(1:(start+step+1)),B]<-data[(1:(start+step+1)),1]
+      }
+      
     }
     
     #Get back outcome when specified node at s (or Y^*) was either 1 or 0:
