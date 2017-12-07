@@ -13,6 +13,9 @@
 #' It refers to O_i, and it is of the same dimension as the actual C(i), but further in the past.
 #' Default is 0, meaning that it starts right after the node in question. Also, note that lag should be equal or smaller than start.   
 #' @param MC How many Monte Carlo samples should be generated.
+#' @param init If TRUE, estimates the mean difference between the estimated Y_g*= 1 and 
+#' Y_g* = 0 (Y under intervention). If FALSE, we are within a s loop and look at the Y before starting MC draws. 
+#' @param returnMC If TRUE, returns all MC draws. 
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -22,7 +25,7 @@
 #' @export
 #'
 
-mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC) {
+mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, init=FALSE, returnMC=FALSE) {
 
   data<-fit$data
   
@@ -65,6 +68,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
     data_est_full<-cbind.data.frame(data=data,res)
     
     #Drop time 0 for estimation
+    #Notice: drop step*(lag+1) each time
     cc<-complete.cases(data_est_full)
     data_est<-data_est_full[cc,]
     data_lag<-data.frame(data_est[-1,])
@@ -92,6 +96,10 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
   res_1<-matrix(nrow=MC,ncol=1)
   res_0<-matrix(nrow=MC,ncol=1)
   
+  #Prepare to return all MCs (up to time t generated draws)
+  retMC<-matrix(nrow = nrow(data_lag), ncol=MC)
+  row.names(retMC)<-row.names(data_lag_origin) 
+
   for(B in 1:MC){
     
     data_lag<-data_lag_origin
@@ -219,33 +227,38 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
     }
     
     outcome[B,]<-newY
+    if(returnMC==TRUE){
+      retMC[,B]<-data_lag[-1,1]
+    }
     
-    #Get back outcome when specified node at s was either 1 or 0:
-    if(node=="W"){
-      if(data_lag[(start+1),1]==0){
+    #Get back outcome when specified node at s (or Y^*) was either 1 or 0:
+    if(init=="TRUE"){
+      #If we are not in the s loop, and want to see the difference between newY. (Y^*)
+      if(newY==0){
         res_0[B,]<-newY
       }else{
         res_1[B,]<-newY
       }
-    }else if(node=="A"){
-      if(data_lag[(start+2),1]==0){
-        res_0[B,]<-newY
-      }else{
-        res_1[B,]<-newY
-      }
-    }else if(node=="Y"){
-      if(data_lag[(start+3),1]==0){
+    }else{
+      #Look at the node at s (it will be the one before start)
+      if(data_lag[(start-1),1]==0){
         res_0[B,]<-newY
       }else{
         res_1[B,]<-newY
       }
     }
+
+  }
+
+  if(returnMC==TRUE){
+    return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
+                s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0,MCdata=retMC))
+    
+  }else{
+    return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
+                s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0))
     
   }
-  
-  return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
-              s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0))
 
- 
 }
 
