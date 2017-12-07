@@ -23,7 +23,15 @@
 #' \describe{
 #' \item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
 #' \item{outcome}{Outcome at time t for each MC interation.}
-#'
+#' \item{intervention}{Intervention specified.}
+#' \item{MC}{How many Monte Carlo samples should be generated.}
+#' \item{Anode}{Intervention node as a function of O_i.}
+#' \item{s1}{Mean of the intervened outcome given s=1 (used for the clever covariate calculation).} 
+#' \item{s0}{Mean of the intervened outcome given s=0 (used for the clever covariate calculation).} 
+#' \item{s1_full}{Intervened outcomes given s=1.}  
+#' \item{s0_full}{Intervened outcomes given s=0.}  
+#' \item{MCdata}{If \code{returnMC} is TRUE, returns a data.frame with MC time-series.} 
+#' 
 #' @export
 #'
 
