@@ -42,7 +42,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
     #TO DO: Make this more general later on. Easy
     res<-res[,c(2,1)]
     
-    data_est_full3<-cbind.data.frame(data=data,res)
+    data_est_full<-cbind.data.frame(data=data,res)
     
     #Drop time 0 for estimation
     cc<-complete.cases(data_est_full)
@@ -62,7 +62,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
     res<-lapply((1+step*lag):(fit$freqW+step*lag), function(x) {Lag(data[,1], x)})
     res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
     
-    data_est_full3<-cbind.data.frame(data=data,res)
+    data_est_full<-cbind.data.frame(data=data,res)
     
     #Drop time 0 for estimation
     cc<-complete.cases(data_est_full)
@@ -75,12 +75,12 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
     estNames<-row.names(data_lag) 
   }
   
-  #get actual index of Anode (based on data_lag)
-  Anode<-Anode*step-1
+  #get actual index of Anode 
+  Anode<-Anode*step+2-(lag+1)*step
   
   #Get actual index for start, depended on W.
   #(right now, start is set to be the batch, not actual index)
-  start<-(start-1)*step+1
+  start<-start*step-(lag+1)*step+1
   
   #TO DO: Later on will need to include more Ws
   #TO DO: This should be parallelized 
@@ -244,7 +244,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=1, MC
   }
   
   return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
-              s1<-mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0))
+              s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0))
 
  
 }
