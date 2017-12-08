@@ -18,6 +18,7 @@
 #' @param returnMC If TRUE, returns all MC draws. 
 #' @param clevCov If TRUE, this MC is used for the calculation of the clever covariate. Instead of observed data,
 #' it used intervened P* for further MC draws.
+#' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -26,25 +27,56 @@
 #' \item{intervention}{Intervention specified.}
 #' \item{MC}{How many Monte Carlo samples should be generated.}
 #' \item{Anode}{Intervention node as a function of O_i.}
-#' \item{s1}{Mean of the intervened outcome given s=1 (used for the clever covariate calculation).} 
-#' \item{s0}{Mean of the intervened outcome given s=0 (used for the clever covariate calculation).} 
-#' \item{s1_full}{Intervened outcomes given s=1.}  
-#' \item{s0_full}{Intervened outcomes given s=0.}  
+#' \item{s1}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).} 
+#' \item{s_full}{Intervened outcomes given s=1 or s=0.}  
 #' \item{MCdata}{If \code{returnMC} is TRUE, returns a data.frame with MC time-series.} 
 #' 
 #' @export
 #'
 
-mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, init=FALSE, returnMC=FALSE, clevCov=FALSE) {
+mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, init=FALSE, returnMC=FALSE, clevCov=FALSE, set=NULL) {
 
-  if(clevCov==TRUE){
+  #Checks
+  if(start<lag){
+    stop("Start time has to be equal or greater than how far in the past we want to go. Pick some start>=lag.")
+  }
+  
+  if(start<=0){
+    stop("First point in a time series is 1.")
+  }
+  
+  if(Anode<=0){
+    stop("Anode must be a positive number indicating O_i in a time series.")
+  }
+  
+  if(t<=0){
+    stop("Outcome must be a positive number indicating O_i in a time series.")
+  }
+  
+  if(t<Anode){
+    warning("Still intervention will not have any effect on the specified outcome.")
+  }
+  
+  #How many in a batch:
+  step<-length(grep('_0', row.names(data), value=TRUE))
+  
+  #If estMC is used for clever covariate calculation, use P^*.
+  if(clevCov==TRUE && init==FALSE){
     data<-fit$p_star
+    
+    #Set s node to "set". s node is start-1
+    s<-start-1
+    data[(s*step),]<-set
+    
   }else{
     data<-fit$data
   }
-
-  #How many in a batch:
-  step<-length(grep('_0', row.names(data), value=TRUE))
+  
+  #Prepare to return all MCs (up to time t generated draws)
+  if(returnMC==TRUE){
+    retMC<-matrix(nrow = (nrow(data_lag)+step), ncol=MC)
+    row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
+  }
 
   #Impose artifical order (C(i)) for the clever covariate calculation. 
   #Should default to whatever was estimated in initEst()
@@ -55,23 +87,23 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     #This gives further up lag first
     res<-lapply((step*lag+1):(fit$freqW+step*lag), function(x) {Lag(data[,1], x)})
     res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
-    
-    #TO DO: Make this more general later on. To time right now
-    res<-res[,c(2,1)]
-    
+  
     data_est_full<-cbind.data.frame(data=data,res)
-    
-    #Drop time 0 for estimation
-    cc<-complete.cases(data_est_full)
-    data_est<-data_est_full[cc,]
-    data_lag<-data.frame(data_est[-1,])
-    data_lag<-data.frame(data_lag[,-1])
+    data_lag<-data.frame(data_est_full[,-1])
     
     #Now have to take into account it does not start at 1...
     if(clevCov==FALSE){
       data_lag<-data_lag[1:((t*step)-(lag*step)),]
       estNames<-row.names(data_lag)  
     }
+    
+    #get actual index of Anode 
+    Anode<-Anode*step+2
+    
+    #Get actual index for start, depended on W.
+    #(right now, start is set to be the batch, not actual index)
+    start<-start*step+1
+    
   }else if(lag>=0){
     
     #This is ok under the assumption orders are the same dimension.
@@ -95,28 +127,22 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
       data_lag<-data_lag[1:((t*step)-(lag*step)),]
       estNames<-row.names(data_lag)  
     }
+    
+    #get actual index of Anode 
+    Anode<-Anode*step+2-(lag+1)*step
+    
+    #Get actual index for start, depended on W.
+    #(right now, start is set to be the batch, not actual index)
+    start<-start*step-(lag+1)*step+1
   }
-  
-  #get actual index of Anode 
-  Anode<-Anode*step+2-(lag+1)*step
-  
-  #Get actual index for start, depended on W.
-  #(right now, start is set to be the batch, not actual index)
-  start<-start*step-(lag+1)*step+1
   
   #TO DO: Later on will need to include more Ws
   #TO DO: This should be parallelized 
   outcome<-matrix(nrow = MC, ncol = 1)
   data_lag_origin<-data_lag
   
-  #Remember the outcome for specific node being either 1 or 0
   #Need this for the clever covariate.
-  res_1<-matrix(nrow=MC,ncol=1)
-  res_0<-matrix(nrow=MC,ncol=1)
-  
-  #Prepare to return all MCs (up to time t generated draws)
-  retMC<-matrix(nrow = (nrow(data_lag)+step), ncol=MC)
-  row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
+  res<-matrix(nrow=MC,ncol=1)
 
   for(B in 1:MC){
     
@@ -263,31 +289,17 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     }
     
     #Get back outcome when specified node at s (or Y^*) was either 1 or 0:
-    if(init=="TRUE"){
-      #If we are not in the s loop, and want to see the difference between newY. (Y^*)
-      if(newY==0){
-        res_0[B,]<-newY
-      }else{
-        res_1[B,]<-newY
-      }
-    }else{
-      #Look at the node at s (it will be the one before start)
-      if(data_lag[(start-1),1]==0){
-        res_0[B,]<-newY
-      }else{
-        res_1[B,]<-newY
-      }
-    }
+    res[B,]<-newY
 
   }
 
   if(returnMC==TRUE){
     return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
-                s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0,MCdata=retMC))
+                s=mean(res, na.rm=TRUE), s_full=res, MCdata=retMC))
     
   }else{
     return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
-                s1=mean(res_1, na.rm=TRUE), s0=mean(res_0, na.rm = TRUE), s1_full=res_1, s0_full=res_0))
+                s=mean(res, na.rm=TRUE), s_full=res))
     
   }
 
