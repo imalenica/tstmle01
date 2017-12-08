@@ -13,8 +13,6 @@
 #' It refers to O_i, and it is of the same dimension as the actual C(i), but further in the past.
 #' Default is 0, meaning that it starts right after the node in question. Also, note that lag should be equal or smaller than start.   
 #' @param MC How many Monte Carlo samples should be generated.
-#' @param init If TRUE, estimates the mean difference between the estimated Y_g*= 1 and 
-#' Y_g* = 0 (Y under intervention). If FALSE, we are within a s loop and look at the Y before starting MC draws. 
 #' @param returnMC If TRUE, returns all MC draws. 
 #' @param clevCov If TRUE, this MC is used for the calculation of the clever covariate. Instead of observed data,
 #' it used intervened P* for further MC draws.
@@ -35,7 +33,7 @@
 #' @export
 #'
 
-mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, init=FALSE, returnMC=FALSE, clevCov=FALSE, set=NULL) {
+mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, returnMC=FALSE, clevCov=FALSE, set=NULL) {
 
   #Checks
   if(start<lag){
@@ -62,7 +60,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   step<-length(grep('_0', row.names(data), value=TRUE))
   
   #If estMC is used for clever covariate calculation, use P^*.
-  if(clevCov==TRUE && init==FALSE){
+  if(clevCov==TRUE){
     data<-fit$p_star
     
     #Set s node to "set". s node is start-1
@@ -75,7 +73,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   
   #Prepare to return all MCs (up to time t generated draws)
   if(returnMC==TRUE){
-    retMC<-matrix(nrow = (nrow(data_lag)+step), ncol=MC)
+    retMC<-matrix(nrow = (t*step+step), ncol=MC)
     row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
   }
 

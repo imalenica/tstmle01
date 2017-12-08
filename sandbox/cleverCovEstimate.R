@@ -21,14 +21,14 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
 
   #Generate clever covariates for each of the likelihood components: W,A,Y and EIC
   
-  Hy_cc<-matrix(nrow=t,ncol=1)
+  Hy_cc<-matrix(nrow=t-1,ncol=1)
   Ha_cc<-matrix(nrow=t,ncol=1)
   Hw_cc<-matrix(nrow=t,ncol=1)
   D<-matrix(nrow=t,ncol=1)
   
   #TO DO: Probably need some kind of an internal seed for these computations.
   #Generate our P^*, intervening only on Anode. 
-  p_star<-mcEst(fit, start=Anode, node="A", t=t, Anode=Anode, intervention=intervention, MC=1, init=TRUE, returnMC=TRUE)
+  p_star<-mcEst(fit, start=Anode, node="A", t=t, Anode=Anode, intervention=intervention, MC=1, returnMC=TRUE)
   
   #Add intervened data to fit:
   fit[["p_star"]]<-p_star$MCdata

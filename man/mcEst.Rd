@@ -5,8 +5,7 @@
 \title{Compute the Monte Carlo estimate}
 \usage{
 mcEst(fit, start = 1, node = "W", t, Anode, intervention = NULL,
-  lag = 0, MC, init = FALSE, returnMC = FALSE, clevCov = FALSE,
-  set = NULL)
+  lag = 0, MC, returnMC = FALSE, clevCov = FALSE, set = NULL)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -26,9 +25,6 @@ It refers to O_i, and it is of the same dimension as the actual C(i), but furthe
 Default is 0, meaning that it starts right after the node in question. Also, note that lag should be equal or smaller than start.}
 
 \item{MC}{How many Monte Carlo samples should be generated.}
-
-\item{init}{If TRUE, estimates the mean difference between the estimated Y_g*= 1 and 
-Y_g* = 0 (Y under intervention). If FALSE, we are within a s loop and look at the Y before starting MC draws.}
 
 \item{returnMC}{If TRUE, returns all MC draws.}
 
