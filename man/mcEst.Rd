@@ -5,7 +5,8 @@
 \title{Compute the Monte Carlo estimate}
 \usage{
 mcEst(fit, start = 1, node = "W", t, Anode, intervention = NULL,
-  lag = 0, MC, init = FALSE, returnMC = FALSE, clevCov = FALSE)
+  lag = 0, MC, init = FALSE, returnMC = FALSE, clevCov = FALSE,
+  set = NULL)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -33,6 +34,21 @@ Y_g* = 0 (Y under intervention). If FALSE, we are within a s loop and look at th
 
 \item{clevCov}{If TRUE, this MC is used for the calculation of the clever covariate. Instead of observed data,
 it used intervened P* for further MC draws.}
+
+\item{set}{Set the s node to either 1 or 0. Used for the clever covariate calculation.}
+}
+\value{
+An object of class \code{tstmle}.
+\describe{
+\item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
+\item{outcome}{Outcome at time t for each MC interation.}
+\item{intervention}{Intervention specified.}
+\item{MC}{How many Monte Carlo samples should be generated.}
+\item{Anode}{Intervention node as a function of O_i.}
+\item{s1}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).} 
+\item{s_full}{Intervened outcomes given s=1 or s=0.}  
+\item{MCdata}{If \code{returnMC} is TRUE, returns a data.frame with MC time-series.} 
+}
 }
 \description{
 This function computes the Monte Carlo estimate of the expected value of the parameter of interest

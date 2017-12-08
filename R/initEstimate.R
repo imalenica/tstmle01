@@ -19,7 +19,7 @@
 #' \item{freqY}{Input Markov order for Y.}
 #' \item{data}{Input data.}
 #' \item{lag_data}{Data with lagged components.}
-#'         
+#' }         
 #'                         
 #' @importFrom Hmisc Lag
 #' 

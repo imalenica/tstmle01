@@ -30,6 +30,7 @@
 #' \item{s1}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).} 
 #' \item{s_full}{Intervened outcomes given s=1 or s=0.}  
 #' \item{MCdata}{If \code{returnMC} is TRUE, returns a data.frame with MC time-series.} 
+#' }
 #' 
 #' @export
 #'
