@@ -14,7 +14,7 @@ mcEst_noint <- mcEst(fit, start=1, node="W", t=5, Anode=3, intervention=NULL, la
 mcEst_noint$estimate
 
 #Calculate the clever covariate
-cleverCovariate<-cleverCov(fit, t=5, Anode=3, intervention=1,  MC=1000)
+cleverCovariate<-cleverCov(fit,t=5,Anode=3,MC=10)
 
 
 

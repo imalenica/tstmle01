@@ -50,23 +50,27 @@ mainTMLE <- function(clevCov, fit) {
   
   #TO DO: Finish until convergence
   
-  #logit update:
-  logUpdate_y<-glm(Y~ -1 + offset(qlogis(Y_pred)) + Hy, family='binomial')
-  logUpdate_a<-glm(A~ -1 + offset(qlogis(A_pred)) + Ha, family='binomial')
-  logUpdate_w<-glm(W~ -1 + offset(qlogis(W_pred)) + Hw, family='binomial')
- 
-  #Get epsilons
-  eps_y<-logUpdate_y$coefficients
-  eps_a<-logUpdate_a$coefficients
-  eps_w<-logUpdate_w$coefficients
+  if(mean(D)>sd(D)/t){
+    
+    #logit update:
+    logUpdate_y<-glm(Y~ -1 + offset(qlogis(Y_pred)) + Hy, family='binomial')
+    logUpdate_a<-glm(A~ -1 + offset(qlogis(A_pred)) + Ha, family='binomial')
+    logUpdate_w<-glm(W~ -1 + offset(qlogis(W_pred)) + Hw, family='binomial')
+    
+    #Get epsilons
+    eps_y<-logUpdate_y$coefficients
+    eps_a<-logUpdate_a$coefficients
+    eps_w<-logUpdate_w$coefficients
+    
+    #New estimate
+    Y_star<-plogis(qlogis(Y_pred) + eps_y*Hy)
+    A_star<-plogis(qlogis(A_pred) + eps_a*Ha)
+    W_star<-plogis(qlogis(W_pred) + eps_w*Hw)
+    
+    Y_pred<-Y_star
+    A_pred<-A_star
+    W_pred<-W_star
+    
+  }
   
-  #New estimate
-  Y_star<-plogis(qlogis(Y_pred) + eps_y*Hy)
-  A_star<-plogis(qlogis(A_pred) + eps_a*Ha)
-  W_star<-plogis(qlogis(W_pred) + eps_w*Hw)
-  
-  Y_pred<-Y_star
-  A_pred<-A_star
-  W_pred<-W_star
-
 }
