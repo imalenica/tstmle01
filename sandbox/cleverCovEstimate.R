@@ -18,12 +18,13 @@
 #'
 
 cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
-  
-  #Generate clever covariates for each of the likelihood components: W,A,Y
+
+  #Generate clever covariates for each of the likelihood components: W,A,Y and EIC
   
   Hy_cc<-matrix(nrow=t,ncol=1)
   Ha_cc<-matrix(nrow=t,ncol=1)
   Hw_cc<-matrix(nrow=t,ncol=1)
+  D<-matrix(nrow=t,ncol=1)
   
   #TO DO: Probably need some kind of an internal seed for these computations.
   #Generate our P^*, intervening only on Anode. 
@@ -131,15 +132,12 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
     Ha_cc[i,]<-Ha_diff
     Hw_cc[i,]<-Hw_diff
     
+    #Calculate the EIC:
+    preds<-getPred(fit,i)
+    D[i,]<-Hy_cc[i,]*(preds$Y-preds$Y_pred)+Ha_cc[i,]*(preds$A-preds$A_pred)+Hw_cc[i,]*(preds$W-preds$W_pred)
     
   }
-  
-
-  
-  
-  
-  
-  
-  
+   
+   return(list(Hy=Hy_cc,Ha=Ha_cc,Hw=Hw_cc, Dbar=D))
   
 }
