@@ -19,6 +19,8 @@
 
 cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
 
+  step<-length(grep('_0', row.names(fit$data), value=TRUE))
+  n<-nrow(fit$data)/step-1
   #Generate clever covariates for each of the likelihood components: W,A,Y and EIC
   
   Hy_cc<-matrix(nrow=t-1,ncol=1)
@@ -33,7 +35,7 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
   #Add intervened data to fit:
   fit[["p_star"]]<-p_star$MCdata
 
-  for(i in 1:(t-1)){
+  for(i in 1:n){
     
     Hy_diff<-0
     Ha_diff<-0
@@ -48,15 +50,16 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
       if(s<i){
         #Look into the future to condition on.
         if(s==t){
-          #If s=t, then just return E[Y^*=1|C_y]-E[Y^*=0|C_y] (MC from the begining, see how many 1s and 0s we get)
-          Hy<-mcEst(fit, start=s, node="W", t=t, Anode=Anode, intervention=intervention, lag=(-1*(i-s)), MC=MC)
-          Hy_diff_add<-sum(Hy$outcome==1)/MC-sum(Hy$outcome==0)/MC
+          #If s=t, then just return Y^* for Hy.
+          Hy_diff_add<-p_star$MCdata[length(p_star$MCdata),]
           
-          Ha<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, intervention=intervention, lag=(-1*(i-s)), MC=MC)
-          Ha_diff_add<-sum(Ha$outcome==1)/MC-sum(Ha$outcome==0)/MC
+          Ha1<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=1)
+          Ha0<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=0)
+          Ha_diff_add<-Ha1$s-Ha0$s
           
-          Hw<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, intervention=intervention, lag=(-1*(i-s)), MC=MC)
-          Hw_diff_add<-sum(Hw$outcome==1)/MC-sum(Hw$outcome==0)/MC
+          Hw1<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=1)
+          Hw0<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=0)
+          Hw_diff_add<-Hw1$s-Hw0$s 
         }else{
           Hy1<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=1)
           Hy0<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=(-1*(i-s)), MC=MC, clevCov=TRUE, set=0)
@@ -73,15 +76,16 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
       }else if(s==i){
         #Usual setting.
         if(s==t){
-          #If s=t, then just return E[Y^*=1|C_y]-E[Y^*=0|C_y] (MC from the begining, see how many 1s and 0s we get)
-          Hy<-mcEst(fit, start=s, node="W", t=t, Anode=Anode, intervention=intervention, lag=0, MC=MC)
-          Hy_diff_add<-sum(Hy$outcome==1)/MC-sum(Hy$outcome==0)/MC
+          #If s=t, then just return Y^* for Hy.
+          Hy_diff_add<-p_star$MCdata[length(p_star$MCdata),]
           
-          Ha<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, intervention=intervention, lag=0, MC=MC)
-          Ha_diff_add<-sum(Ha$outcome==1)/MC-sum(Ha$outcome==0)/MC
+          Ha1<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=1)
+          Ha0<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=0)
+          Ha_diff_add<-Ha1$s-Ha0$s
           
-          Hw<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, intervention=intervention, lag=0, MC=MC)
-          Hw_diff_add<-sum(Hw$outcome==1)/MC-sum(Hw$outcome==0)/MC
+          Hw1<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=1)
+          Hw0<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=0)
+          Hw_diff_add<-Hw1$s-Hw0$s
         }else{
           Hy1<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=1)
           Hy0<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=0, MC=MC, clevCov=TRUE, set=0)
@@ -98,15 +102,16 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
       }else if(s>i){
         #Look further in the past since s>i.
         if(s==t){
-          #If s=t, then just return E[Y^*=1|C_y]-E[Y^*=0|C_y] (MC from the begining, see how many 1s and 0s we get)
-          Hy<-mcEst(fit, start=s, node="W", t=t, Anode=Anode, intervention=intervention, lag=(s-i), MC=MC)
-          Hy_diff_add<-sum(Hy$outcome==1)/MC-sum(Hy$outcome==0)/MC
+          #If s=t, then just return Y^* for Hy.
+          Hy_diff_add<-p_star$MCdata[length(p_star$MCdata),]
           
-          Ha<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, intervention=intervention, lag=(s-i), MC=MC)
-          Ha_diff_add<-sum(Ha$outcome==1)/MC-sum(Ha$outcome==0)/MC
+          Ha1<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=1)
+          Ha0<-mcEst(fit, start=s, node="Y", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=0)
+          Ha_diff_add<-Ha1$s-Ha0$s 
           
-          Hw<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, intervention=intervention, lag=(s-i), MC=MC)
-          Hw_diff_add<-sum(Hw$outcome==1)/MC-sum(Hw$outcome==0)/MC
+          Hw1<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=1)
+          Hw0<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=0)
+          Hw_diff_add<-Hw1$s-Hw0$s
         }else{
           Hy1<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=1)
           Hy0<-mcEst(fit, start=s+1, node="W", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=0)
