@@ -13,7 +13,8 @@
 #' It refers to O_i, and it is of the same dimension as the actual C(i), but further in the past.
 #' Default is 0, meaning that it starts right after the node in question. Also, note that lag should be equal or smaller than start.   
 #' @param MC How many Monte Carlo samples should be generated.
-#' @param returnMC If TRUE, returns all MC draws. 
+#' @param returnMC If TRUE, returns all MC draws up until outcome time. 
+#' @param returnMC_full If TRUE, returns all full MC draws. 
 #' @param clevCov If TRUE, this MC is used for the calculation of the clever covariate. Instead of observed data,
 #' it used intervened P* for further MC draws.
 #' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
@@ -33,7 +34,7 @@
 #' @export
 #'
 
-mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, returnMC=FALSE, clevCov=FALSE, set=NULL) {
+mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC, returnMC=FALSE, returnMC_full=FALSE, clevCov=FALSE, set=NULL) {
 
   #Checks
   if(start<lag){
@@ -81,9 +82,16 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   }
   
   #Prepare to return all MCs (up to time t (outcome) generated draws)
+  if(returnMC == returnMC_full){
+    warning("Can't return both a full time-series and a shorter time-series. Returning full time-series.")
+  }
+  
   if(returnMC==TRUE){
     retMC<-matrix(nrow = (t*step+step), ncol=MC)
     row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
+  }else if(returnMC_full==TRUE){
+    retMC<-matrix(nrow = nrow(data), ncol=MC)
+    row.names(retMC)<-row.names(data) 
   }
 
   #Impose artifical order (C(i)) for the clever covariate calculation. 
@@ -131,7 +139,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     data_lag<-data.frame(data_lag[,-1])
     
     #Now have to take into account it does not start at 1...
-    if(clevCov==FALSE){
+    if(clevCov==FALSE & returnMC_full==FALSE){
       data_lag<-data_lag[1:((t*step)-(lag*step)),]
       estNames<-row.names(data_lag)  
     }
@@ -280,7 +288,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     
     outcome[B,]<-newY
     
-    if(returnMC==TRUE){
+    if(returnMC==TRUE || returnMC_full==TRUE){
       data_lag<-data_lag[-1,1]
       #Collect changed part of the series (from start until the end)
       if(node=="W"){

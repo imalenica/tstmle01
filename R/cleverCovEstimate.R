@@ -32,7 +32,7 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
   
   #TO DO: Probably need some kind of an internal seed for these computations.
   #Generate our P^*, intervening only on Anode. 
-  p_star<-mcEst(fit, start=Anode, node="A", t=t, Anode=Anode, intervention=intervention, MC=1, returnMC=TRUE)
+  p_star<-mcEst(fit, start=Anode, node="A", t=t, Anode=Anode, intervention=intervention, MC=1, returnMC_full=TRUE)
   
   #Add intervened data to fit:
   fit[["p_star"]]<-p_star$MCdata
