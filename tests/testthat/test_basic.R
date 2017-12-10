@@ -1,7 +1,7 @@
 library(Hmisc)
 
 set.seed(2)
-data<-read.csv("~/Dropbox/Berkeley_Projects/Software/tstmle/data/data.csv", row.names = 1)
+data<-read.csv("~/Dropbox/Berkeley_Projects/School Projects/COMPSCI294_F2017_Project/data/data.csv", row.names = 1)
 
 fit<-initEst(data, freqW = 2,freqA = 2,freqY = 2)
 

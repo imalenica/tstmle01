@@ -25,7 +25,7 @@
 #' \item{intervention}{Intervention specified.}
 #' \item{MC}{How many Monte Carlo samples should be generated.}
 #' \item{Anode}{Intervention node as a function of O_i.}
-#' \item{s1}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).} 
+#' \item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).} 
 #' \item{s_full}{Intervened outcomes given s=1 or s=0.}  
 #' \item{MCdata}{If \code{returnMC} is TRUE, returns a data.frame with MC time-series.} 
 #' }
@@ -63,15 +63,24 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   if(clevCov==TRUE){
     data<-fit$p_star
     
-    #Set s node to "set". s node is start-1
-    s<-start-1
-    data[(s*step),]<-set
+    #Set s node to "set" (1/0), for Y, A, W. 
+    if(node=="W"){
+      s<-start
+      data[(s*step),]<-set
+    }else if(node=="Y"){
+      s<-start
+      data[(s*step)+2,]<-set
+    }else if(node=="A"){
+      s<-start
+      data[(s*step)+1,]<-set
+    }
+    
     
   }else{
     data<-fit$data
   }
   
-  #Prepare to return all MCs (up to time t generated draws)
+  #Prepare to return all MCs (up to time t (outcome) generated draws)
   if(returnMC==TRUE){
     retMC<-matrix(nrow = (t*step+step), ncol=MC)
     row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
