@@ -6,7 +6,7 @@ Authors@R: c(
     person("Ivana", "Malenica", email = "imalenica@berkeley.edu",
            role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0002-7404-8088")),
     person("Mark", "van der Laan", email = "laan@berkeley.edu",
-           role = "aut")       
+           role = "aut"),       
     person("Jonathan", "Levy", email = "jlstiles@berkeley.edu",
            role = "aut"),
     person("Chris", "Kennedy", email = "ck37@berkeley.edu",

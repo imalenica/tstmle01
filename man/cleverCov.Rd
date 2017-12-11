@@ -19,6 +19,11 @@ cleverCov(fit, t, Anode, intervention = 1, MC = 1000, B = 100)
 
 \item{B}{How many samples to draw from P and P^*, as part of the h-density estimation.}
 }
+\value{
+An object of class \code{tstmle}.
+\describe{
+\item{fit}{Fit objects for each part of the likelihood.}}
+}
 \description{
 This function calculates the clever covariate for each time point.
 }

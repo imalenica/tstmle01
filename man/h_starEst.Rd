@@ -21,6 +21,13 @@ h_starEst(fit, s, i, B, t, Anode, intervention = 1)
 
 \item{intervention}{Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.}
 }
+\value{
+An object of class \code{tstmle}.
+\describe{
+\item{h_cy_star}{Empirical estimate of h_cy under the intervention g^*.}
+\item{h_ca_star}{Empirical estimate of h_ca under the intervention g^*.}
+\item{h_cw_star}{Empirical estimate of h_cw under the intervention g^*.}}
+}
 \description{
 This function evaluates the h^*-density, necessary for the clever covariate calculation.
 }

@@ -19,6 +19,12 @@ mainTMLE(fit, t, Anode, MC, maxIter = 50, tol = 10^-5)
 
 \item{tol}{Lower bound for epsilon.}
 }
+\value{
+An object of class \code{tstmle}.
+\describe{
+\item{psi}{Estimate of the target parameter.}
+\item{var.psi}{Variance, based on the influence function.}}
+}
 \description{
 This function runs the TMLE and computes the estimate.
 }

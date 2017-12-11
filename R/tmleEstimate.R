@@ -12,7 +12,7 @@
 #' @return An object of class \code{tstmle}.
 #' \describe{
 #' \item{psi}{Estimate of the target parameter.}
-#' \item{var.psi}{Variance, based on the influence function.}
+#' \item{var.psi}{Variance, based on the influence function.}}
 #'            
 #' 
 #'

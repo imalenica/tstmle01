@@ -12,9 +12,9 @@
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{h_cy}{Empirical estimate of h_cy under the intervention g^*.}
-#' \item{h_ca}{Empirical estimate of h_ca under the intervention g^*.}
-#' \item{h_cw}{Empirical estimate of h_cw under the intervention g^*.}
+#' \item{h_cy_star}{Empirical estimate of h_cy under the intervention g^*.}
+#' \item{h_ca_star}{Empirical estimate of h_ca under the intervention g^*.}
+#' \item{h_cw_star}{Empirical estimate of h_cw under the intervention g^*.}}
 #'            
 #' 
 #'
@@ -69,5 +69,5 @@ h_starEst <- function(fit, s, i, B, t, Anode, intervention=1) {
   h_ca<-sum(Ca_match, na.rm = TRUE)/B
   h_cw<-sum(Cw_match, na.rm = TRUE)/B
   
-  return(list(h_cy=h_cy,h_ca=h_ca,h_cw=h_cw))
+  return(list(h_cy_star=h_cy,h_ca_star=h_ca,h_cw_star=h_cw))
   }

@@ -11,7 +11,7 @@
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{fit}{Fit objects for each part of the likelihood.}
+#' \item{fit}{Fit objects for each part of the likelihood.}}
 #'            
 #' 
 #'
