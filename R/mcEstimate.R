@@ -148,6 +148,8 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     data_lag<-data.frame(data_est[-1,])
     data_lag<-data.frame(data_lag[,-1])
     
+    n<-nrow(data_lag)/step
+    
     #Option for returnMC
     if(clevCov==FALSE & returnMC_full==FALSE){
       data_lag<-data_lag[1:((t*step)-(lag*step)),]

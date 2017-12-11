@@ -4,13 +4,16 @@
 \alias{mainTMLE}
 \title{Main TMLE Calculations}
 \usage{
-mainTMLE(clevCov, fit, maxIter = 50, tol = 10^-5)
+mainTMLE(fit, t, Anode, MC, maxIter = 50, tol = 10^-5)
 }
 \arguments{
-\item{clevCov}{Results object obtained by \code{cleverCov}. It contains clever covariates for each of 
-the components of the likelihood, and the efficient influence curve.}
-
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
+
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
+
+\item{Anode}{Intervention node.}
+
+\item{MC}{How many Monte Carlo samples should be generated.}
 
 \item{maxIter}{Maximum number of iterations.}
 

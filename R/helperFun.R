@@ -24,7 +24,7 @@ getPred<-function(fit, t){
   return(list(W=W,A=A,Y=Y,W_pred=W_pred,A_pred=A_pred,Y_pred=Y_pred))
 }
 
-#Function to recalculate the EIC based on the already calculated clever covaraites.
+#Function to recalculate the EIC based on the already calculated clever covariates.
 getEIC<-function(clevCov, pred_star, n){
   
   #Get all the clever covariates:

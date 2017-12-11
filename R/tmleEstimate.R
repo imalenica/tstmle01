@@ -86,12 +86,15 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
     row.names(pred_star)<-name
     
     data <- data.frame(data=pred_star[order(row.names(pred_star)), ])
+    
+    #Generate convinient dataframe for getEIC in case this is the last iteration:
+    pred_star_fin<-cbind.data.frame(Y_star=Y_star, A_star=A_star, W_star=W_star)
   
   }
 
   #Update EIC:
-  IC<-getEIC(clevCov, pred_star, n)
-  
+  IC<-getEIC(clevCov, pred_star_fin, n)
+
   return(list(psi=psi, var.psi=var(IC)/n))
     
   }

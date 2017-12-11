@@ -4,7 +4,7 @@
 \alias{cleverCov}
 \title{Clever Covariate calculation}
 \usage{
-cleverCov(fit, t, Anode, intervention = 1, MC = 1000)
+cleverCov(fit, t, Anode, intervention = 1, MC = 1000, B = 100)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -16,6 +16,8 @@ cleverCov(fit, t, Anode, intervention = 1, MC = 1000)
 \item{intervention}{Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.}
 
 \item{MC}{How many Monte Carlo samples should be generated.}
+
+\item{B}{How many samples to draw from P and P^*, as part of the h-density estimation.}
 }
 \description{
 This function calculates the clever covariate for each time point.
