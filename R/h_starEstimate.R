@@ -16,7 +16,7 @@
 #' \item{h_ca_star}{Empirical estimate of h_ca under the intervention g^*.}
 #' \item{h_cw_star}{Empirical estimate of h_cw under the intervention g^*.}}
 #'            
-#' 
+#' @importFrom prodlim row.match
 #'
 #' @export
 #'
