@@ -13,7 +13,7 @@
 #' \item{h_ca}{Empirical estimate of h_ca}
 #' \item{h_cw}{Empirical estimate of h_cw}}
 #'            
-#' 
+#' @importFrom prodlim row.match
 #'
 #' @export
 #'
