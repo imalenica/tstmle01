@@ -4,7 +4,9 @@
 #'
 #' @param clevCov Results object obtained by \code{cleverCov}. It contains clever covariates for each of 
 #' the components of the likelihood, and the efficient influence curve.
-#' @param fit \code{fit} object obtained by \code{initEst}.  
+#' @param fit \code{fit} object obtained by \code{initEst}. 
+#' @param maxIter Maximum number of iterations.
+#' @param tol Lower bound for epsilon. 
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -15,9 +17,9 @@
 #' @export
 #'
 
-mainTMLE <- function(clevCov, fit) {
+mainTMLE <- function(clevCov, fit, maxIter=50, tol=10^-5) {
   
-  #Get all the clever covariates:
+  #Get all the initial clever covariates:
   Hy<-clevCov$Hy
   Ha<-clevCov$Ha
   Hw<-clevCov$Hw
@@ -48,7 +50,22 @@ mainTMLE <- function(clevCov, fit) {
     
   }
   
-  #TO DO: Finish until convergence
+  #Implement with one epsilon:
+  iter<-0
+  eps<-Inf
+  
+  while(iter<=maxIter & (abs(eps) > tol)){
+    iter<-iter+1
+    
+    
+    
+    eps<-coef(glm(Y~ -1 + offset(qlogis(Y_pred)) + Hy, family='binomial'))
+  }
+  
+  
+  
+  
+  
   
   if(mean(D)>sd(D)/t){
     

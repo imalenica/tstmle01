@@ -89,7 +89,9 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
   if(returnMC==TRUE){
     retMC<-matrix(nrow = (t*step+step), ncol=MC)
     row.names(retMC)<-row.names(data)[1:((t+1)*step)] 
-  }else if(returnMC_full==TRUE){
+  }
+  
+  if(returnMC_full==TRUE){
     retMC<-matrix(nrow = nrow(data), ncol=MC)
     row.names(retMC)<-row.names(data) 
   }
@@ -107,10 +109,18 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     data_est_full<-cbind.data.frame(data=data,res)
     data_lag<-data.frame(data_est_full[,-1])
     
+    n<-nrow(data_lag)/step-1
+    
     #Now have to take into account it does not start at 1...
-    if(clevCov==FALSE){
+    if(clevCov==FALSE & returnMC_full==FALSE){
       data_lag<-data_lag[1:((t*step)-(lag*step)),]
       estNames<-row.names(data_lag)  
+    }
+    
+    #Now that we have all future lags, shorten the time-series.
+    if(returnMC_full==FALSE & n>t){
+      data_lag<-data_lag[1:((t+1)*step),]
+      estNames<-row.names(data_lag)[1:((t+1)*step)] 
     }
     
     #get actual index of Anode 
@@ -138,10 +148,16 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
     data_lag<-data.frame(data_est[-1,])
     data_lag<-data.frame(data_lag[,-1])
     
-    #Now have to take into account it does not start at 1...
+    #Option for returnMC
     if(clevCov==FALSE & returnMC_full==FALSE){
       data_lag<-data_lag[1:((t*step)-(lag*step)),]
       estNames<-row.names(data_lag)  
+    }
+    
+    #Now that we have all future lags, shorten the time-series.
+    if(returnMC_full==FALSE & n>t){
+      data_lag<-data_lag[1:((t+1)*step),]
+      estNames<-row.names(data_lag)[1:((t+1)*step)] 
     }
     
     #get actual index of Anode 
@@ -309,7 +325,7 @@ mcEst <- function(fit, start=1, node="W", t, Anode, intervention=NULL, lag=0, MC
 
   }
 
-  if(returnMC==TRUE){
+  if(returnMC==TRUE || returnMC_full==TRUE){
     return(list(estimate=mean(outcome), outcome=outcome, intervention=intervention,MC=MC, t=t, Anode=Anode,
                 s=mean(res, na.rm=TRUE), s_full=res, MCdata=retMC))
     

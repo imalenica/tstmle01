@@ -23,4 +23,3 @@ getPred<-function(fit, t){
   
   return(list(W=W,A=A,Y=Y,W_pred=W_pred,A_pred=A_pred,Y_pred=Y_pred))
 }
-
