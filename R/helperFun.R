@@ -43,6 +43,7 @@ getEIC<-function(clevCov, pred_star, n){
   return(Dbar=D)
 }
 
-
+#Sample from discrete uniform distribution
+rdunif<-function(n,k) sample(1:k,n,replace=T)
 
 

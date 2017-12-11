@@ -43,6 +43,10 @@ h_starEst <- function(fit, s, i, B, t, Anode, intervention=1) {
   Ca_i<-data.frame(matrix(nrow=B,ncol=fit$freqW))
   Cw_i<-data.frame(matrix(nrow=B,ncol=fit$freqW))
   
+  Cy_match<-data.frame(matrix(nrow=B,ncol=1))
+  Ca_match<-data.frame(matrix(nrow=B,ncol=1))
+  Cw_match<-data.frame(matrix(nrow=B,ncol=1))
+  
   for(b in 1:B){
     res<-lapply(1:fit$freqW, function(x) {Lag(p_star[,b], x)})
     res <- data.frame(matrix(unlist(res), nrow=length(res[[1]])), stringsAsFactors = FALSE)
@@ -59,11 +63,11 @@ h_starEst <- function(fit, s, i, B, t, Anode, intervention=1) {
     Ca_i[b,]<-data_est_full[(step+i*step-1),]
     Cw_i[b,]<-data_est_full[(step+i*step-2),]  
     
+    Cy_match[b,]<-prodlim::row.match(Cy[b,],Cy_i[b,])
+    Ca_match[b,]<-prodlim::row.match(Ca[b,],Ca_i[b,])
+    Cw_match[b,]<-prodlim::row.match(Cw[b,],Cw_i[b,])
+    
   }
-  
-  Cy_match<-prodlim::row.match(Cy,Cy_i)
-  Ca_match<-prodlim::row.match(Ca,Ca_i)
-  Cw_match<-prodlim::row.match(Cw,Cw_i)
   
   h_cy<-sum(Cy_match, na.rm = TRUE)/B
   h_ca<-sum(Ca_match, na.rm = TRUE)/B
