@@ -3,6 +3,8 @@ output: rmarkdown::github_document
 bibliography: README-refs.bib
 ---
 
+# Deep Time-Series Learning
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, echo = FALSE}

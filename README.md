@@ -1,4 +1,7 @@
 
+Deep Time-Series Learning
+=========================
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 > Estimation and Inference for Causal Effects with Single Binary Time Series
 
