@@ -18,7 +18,7 @@
 #' @export
 #'
 
-cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000, B=100) {
+cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
 
   step<-length(grep('_0', row.names(fit$data), value=TRUE))
   n<-nrow(fit$data)/step-1
@@ -27,6 +27,10 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000, B=100) {
   Hy_cc<-matrix(nrow=n,ncol=1)
   Ha_cc<-matrix(nrow=n,ncol=1)
   Hw_cc<-matrix(nrow=n,ncol=1)
+  
+  #h-density ratio components
+  h<-matrix(nrow=n,ncol=1)
+  h_star<-matrix(nrow=n,ncol=1)
   
   #EIC:
   D<-matrix(nrow=n,ncol=1)
@@ -43,6 +47,8 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000, B=100) {
     Hy_diff<-0
     Ha_diff<-0
     Hw_diff<-0
+    
+    h_star_all<-0
     
     for(s in 1:t){
 
@@ -127,23 +133,33 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000, B=100) {
           Hw0<-mcEst(fit, start=s, node="A", t=t, Anode=Anode, lag=(s-i), MC=MC, clevCov=TRUE, set=0)
           Hw_diff_add<-Hw1$s-Hw0$s
         }
+        
       }
       
       Hy_diff<-Hy_diff+Hy_diff_add
       Ha_diff<-Ha_diff+Ha_diff_add
       Hw_diff<-Hw_diff+Hw_diff_add
+      
+      #Get h^*
+      h_star_est<-h_starEst(fit, s, i, B, t, Anode, intervention)
+      h_star_all<-h_star_all+h_star_est
+      
     }
     
+    h[i,]<-hEst(fit, i, B, t)
+    h_star[i,]<-h_star_all
+    h_ratio<-h_star/h
+    
     #Store clever covariates for each time point
-    Hy_cc[i,]<-Hy_diff
+    Hy_cc[i,]<-Hy_diff*h_ratio
     #On intervention node 0:
     if(i==Anode){
       Ha_cc[i,]<-0
     }else{
-      Ha_cc[i,]<-Ha_diff 
+      Ha_cc[i,]<-Ha_diff*h_ratio 
     }
-    Hw_cc[i,]<-Hw_diff
-    
+    Hw_cc[i,]<-Hw_diff*h_ratio
+
     #Calculate the EIC:
     preds<-getPred(fit,i)
     D[i,]<-Hy_cc[i,]*(preds$Y-preds$Y_pred)+Ha_cc[i,]*(preds$A-preds$A_pred)+Hw_cc[i,]*(preds$W-preds$W_pred)
