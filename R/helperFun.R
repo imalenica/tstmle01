@@ -23,3 +23,26 @@ getPred<-function(fit, t){
   
   return(list(W=W,A=A,Y=Y,W_pred=W_pred,A_pred=A_pred,Y_pred=Y_pred))
 }
+
+#Function to recalculate the EIC based on the already calculated clever covaraites.
+getEIC<-function(clevCov, pred_star, n){
+  
+  #Get all the clever covariates:
+  Hy<-data.frame(clevCov$Hy)
+  Ha<-data.frame(clevCov$Ha)
+  Hw<-data.frame(clevCov$Hw)
+  
+  D<-matrix(nrow=n,ncol=1)
+  
+  #Calculate the EIC:
+  for(i in 1:n){
+    preds<-getPred(fit,i)
+    D[i,]<-Hy[i,]*(preds$Y-pred_star[i,1])+Ha[i,]*(preds$A-pred_star[i,2])+Hw[i,]*(preds$W-pred_star[i,3])
+  }
+  
+  return(Dbar=D)
+}
+
+
+
+

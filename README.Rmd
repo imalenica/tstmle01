@@ -26,7 +26,7 @@ other important estimation problems, including but not limited to classical time
 series models, group sequential adaptive designs, and even independent and
 identically distributed data where the summary measure of the past is simply the
 empty set. For a general introduction to the targeted learning methodology and statistical causal
-inference, please consult @vdl2011targeted and @vdl2017targeted. For details on the theoretical underpinnings of the approach, the interested reader may consider consulting @vdl2017online to start. Actual R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).  
+inference, please consult @vdl2011targeted and @vdl2017targeted. For details on the theoretical underpinnings of the approach, the interested reader may consider consulting @vdl2017online to start. For the actual R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).  
 
 ---
 

@@ -7,6 +7,7 @@
 #' @param Anode Intervention node.
 #' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions. 
 #' @param MC How many Monte Carlo samples should be generated.
+#' @param B How many samples to draw from P and P^*, as part of the h-density estimation. 
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -17,18 +18,18 @@
 #' @export
 #'
 
-cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
+cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000, B=100) {
 
   step<-length(grep('_0', row.names(fit$data), value=TRUE))
   n<-nrow(fit$data)/step-1
   
   #Generate clever covariates for each of the likelihood components: W,A,Y and EIC
-  Hy_cc<-matrix(nrow=t-1,ncol=1)
-  Ha_cc<-matrix(nrow=t,ncol=1)
-  Hw_cc<-matrix(nrow=t,ncol=1)
+  Hy_cc<-matrix(nrow=n,ncol=1)
+  Ha_cc<-matrix(nrow=n,ncol=1)
+  Hw_cc<-matrix(nrow=n,ncol=1)
   
   #EIC:
-  D<-matrix(nrow=t,ncol=1)
+  D<-matrix(nrow=n,ncol=1)
   
   #TO DO: Probably need some kind of an internal seed for these computations.
   #Generate our P^*, intervening only on Anode. 
@@ -43,7 +44,6 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
     Ha_diff<-0
     Hw_diff<-0
     
-    #Need to address s=t case. Think about it.
     for(s in 1:t){
 
       #Example for Hy:
@@ -136,7 +136,12 @@ cleverCov <- function(fit, t, Anode, intervention=1,  MC=1000) {
     
     #Store clever covariates for each time point
     Hy_cc[i,]<-Hy_diff
-    Ha_cc[i,]<-Ha_diff
+    #On intervention node 0:
+    if(i==Anode){
+      Ha_cc[i,]<-0
+    }else{
+      Ha_cc[i,]<-Ha_diff 
+    }
     Hw_cc[i,]<-Hw_diff
     
     #Calculate the EIC:
