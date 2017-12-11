@@ -11,7 +11,8 @@
 #' 
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{fit}{Fit objects for each part of the likelihood.}
+#' \item{psi}{Estimate of the target parameter.}
+#' \item{var.psi}{Variance, based on the influence function.}
 #'            
 #' 
 #'
@@ -27,6 +28,8 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
   while(iter<=maxIter & (abs(eps) > tol)){
     iter<-iter+1
     
+    #Generate a new fit, using updated data:
+    fit<-initEst(data, freqW = 2,freqA = 2,freqY = 2)
     clevCov<-cleverCov(fit,t=t,Anode=Anode,MC=MC)
     
     #Get all the clever covariates:
@@ -77,11 +80,12 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
     A_star<-plogis(qlogis(A_pred) + eps*Ha)
     W_star<-plogis(qlogis(W_pred) + eps*Hw)
     
-    pred_star<-cbind.data.frame(Y_star=Y_star, A_star=A_star, W_star=W_star)
-
-    Y_pred<-Y_star
-    A_pred<-A_star
-    W_pred<-W_star
+    #Make it easier to recombine in W,A,Y fashion.
+    pred_star<-data.frame(data=c(Y_star=Y_star, A_star=A_star, W_star=W_star))
+    name<-c(paste0(seq(1:n),"_C"),paste0(seq(1:n),"_B"),paste0(seq(1:n),"_A"))
+    row.names(pred_star)<-name
+    
+    data <- data.frame(data=pred_star[order(row.names(pred_star)), ])
   
   }
 
