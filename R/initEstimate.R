@@ -54,50 +54,6 @@ initEst <- function(data, freqW=NULL, freqA=NULL, freqY=NULL) {
     
     fit<-list(W=fitW,A=fitA,Y=fitY,freqW=freqW,freqA=freqA,freqY=freqY,data=data,lag_data=data_est)
     
-  }else if(!all.equal(freqA,freqW,freqY)){
-    
-    resW <- lapply(1:freqW, function(x) {Lag(data[,1], x)})
-    resW <- data.frame(matrix(unlist(resW), nrow=length(resW[[1]])), stringsAsFactors = FALSE)
-    data_estW<-cbind.data.frame(data=data,resW)
-    
-    #Drop time 0 for estimation
-    cc<-complete.cases(data_estW)
-    data_estW<-data_estW[cc,]
-    data_estW<-data.frame(data_estW[-1,])
-    
-    resA <- lapply(1:freqA, function(x) {Lag(data[,1], x)})
-    resA <- data.frame(matrix(unlist(resA), nrow=length(resA[[1]])), stringsAsFactors = FALSE)
-    data_estA<-cbind.data.frame(data=data,resA)
-    
-    #Drop time 0 for estimation
-    cc<-complete.cases(data_estA)
-    data_estA<-data_estA[cc,]
-    data_estA<-data.frame(data_estA[-1,])
-    
-    resY <- lapply(1:freqY, function(x) {Lag(data[,1], x)})
-    resY <- data.frame(matrix(unlist(resY), nrow=length(resY[[1]])), stringsAsFactors = FALSE)
-    data_estY<-cbind.data.frame(data=data,resY)
-    
-    #Drop time 0 for estimation
-    cc<-complete.cases(data_estY)
-    data_estY<-data_estY[cc,]
-    data_estY<-data.frame(data_estY[-1,])
-    
-    W<-data_est[grep('W', row.names(data_estW), value=TRUE),]
-    A<-data_est[grep('A', row.names(data_estA), value=TRUE),]
-    Y<-data_est[grep('Y', row.names(data_estY), value=TRUE),]
-    
-    #Estimate the process coefficients. This should allow better strategies later on
-    fitW<-glm(formula = data ~ ., family = binomial(link = "logit"), data = W)
-    fitA<-glm(formula = data ~ ., family = binomial(link = "logit"), data = A)
-    fitY<-glm(formula = data ~ ., family = binomial(link = "logit"), data = Y)
-    
-    fit<-list(W=fitW,A=fitA,Y=fitY,freqW=freqW,freqA=freqA,freqY=freqY,data=data)
-    
-  }else{
-    
-    fit<-forecast::auto.arima(data)
-    
   }
   
   return(fit)

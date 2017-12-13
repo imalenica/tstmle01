@@ -7,18 +7,24 @@
 #' @param Anode Intervention node.
 #' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions. 
 #' @param MC How many Monte Carlo samples should be generated.
-#' @param B How many samples to draw from P and P^*, as part of the h-density estimation. 
+#' @param B How many samples to draw from P, as part of the h-density estimation.
+#' @param N How many sample to draw from P^*, as part of the h-density estimation.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{fit}{Fit objects for each part of the likelihood.}}
+#' \item{Hy}{Clever covariate for Y component of the likelihood.}
+#' \item{Ha}{Clever covariate for A component of the likelihood.}
+#' \item{Hw}{Clever covariate for W component of the likelihood.}
+#' \item{Dbar}{Efficient Influence Curve.}
+#' \item{h_star}{Empirical estimate of h-density under the intervention g^*.}
+#' \item{h}{Empirical estimate of h-density under no intervention.}}
 #'            
 #' 
 #'
 #' @export
 #'
 
-cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
+cleverCov <- function(fit, t, Anode, intervention=1, B=100, N=100, MC=100) {
 
   step<-length(grep('_0', row.names(fit$data), value=TRUE))
   n<-nrow(fit$data)/step-1
@@ -29,8 +35,13 @@ cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
   Hw_cc<-matrix(nrow=n,ncol=1)
   
   #h-density ratio components
-  h<-matrix(nrow=n,ncol=1)
-  h_star<-matrix(nrow=n,ncol=1)
+  hy_res<-matrix(nrow=n,ncol=1)
+  ha_res<-matrix(nrow=n,ncol=1)
+  hw_res<-matrix(nrow=n,ncol=1)
+  
+  hy_star_res<-matrix(nrow=n,ncol=1)
+  ha_star_res<-matrix(nrow=n,ncol=1)
+  hw_star_res<-matrix(nrow=n,ncol=1)
   
   #EIC:
   D<-matrix(nrow=n,ncol=1)
@@ -48,8 +59,10 @@ cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
     Ha_diff<-0
     Hw_diff<-0
     
-    h_star_all<-0
-    
+    hy_star<-0
+    ha_star<-0
+    hw_star<-0
+ 
     for(s in 1:t){
 
       #Example for Hy:
@@ -142,23 +155,43 @@ cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
       
       #Get h^*
       h_star_est<-h_starEst(fit, s, i, B, t, Anode, intervention)
-      h_star_all<-h_star_all+h_star_est
+
+      #Sum over all s:
+      hy_star<-hy_star+h_star_est$h_cy_star
+      ha_star<-ha_star+h_star_est$h_ca_star
+      hw_star<-hw_star+h_star_est$h_cw_star
       
     }
     
-    h[i,]<-hEst(fit, i, B, t)
-    h_star[i,]<-h_star_all
-    h_ratio<-h_star/h
+    #Get h
+    h_init<-hEst(fit, i, B=N, t)
+    
+    hy_res[i,]<-h_init$h_cy
+    ha_res[i,]<-h_init$h_ca
+    hw_res[i,]<-h_init$h_cw
+    
+    #Save sums for h^*
+    hy_star_res[i,]<-hy_star
+    ha_star_res[i,]<-ha_star
+    hw_star_res[i,]<-hw_star
+
+    #Notice that this will give a LOT of weight to early time-points if t<N
+    #(whenever there is a chance i=s)
+    
+    #Generate ratio for each component of the likelihood for "sample" time i:
+    hy_ratio<-hy_star_res[i,]/hy_res[i,]
+    ha_ratio<-ha_star_res[i,]/ha_res[i,]
+    hw_ratio<-hw_star_res[i,]/hw_res[i,]
     
     #Store clever covariates for each time point
-    Hy_cc[i,]<-Hy_diff*h_ratio
+    Hy_cc[i,]<-Hy_diff*hy_ratio
     #On intervention node 0:
     if(i==Anode){
       Ha_cc[i,]<-0
     }else{
-      Ha_cc[i,]<-Ha_diff*h_ratio 
+      Ha_cc[i,]<-Ha_diff*ha_ratio 
     }
-    Hw_cc[i,]<-Hw_diff*h_ratio
+    Hw_cc[i,]<-Hw_diff*hw_ratio
 
     #Calculate the EIC:
     preds<-getPred(fit,i)
@@ -166,6 +199,8 @@ cleverCov <- function(fit, t, Anode, intervention=1, B=100, MC=1000, B=100) {
     
   }
    
-   return(list(Hy=Hy_cc,Ha=Ha_cc,Hw=Hw_cc, Dbar=D))
+   return(list(Hy=Hy_cc,Ha=Ha_cc,Hw=Hw_cc,Dbar=D, 
+               h_star=list(Hy_star=hy_star_res,Ha_star=ha_star_res,Hw_star=hw_star_res),
+               h=list(Hy=hy_res,Ha=ha_res,Hw=hw_res)))
   
 }

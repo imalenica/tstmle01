@@ -73,5 +73,5 @@ h_starEst <- function(fit, s, i, B, t, Anode, intervention=1) {
   h_ca<-sum(Ca_match, na.rm = TRUE)/B
   h_cw<-sum(Cw_match, na.rm = TRUE)/B
   
-  return(list(h_cy_star=h_cy,h_ca_star=h_ca,h_cw_star=h_cw))
+  return(list(h_cy_star=h_cy,h_ca_star=h_ca,h_cw_star=h_cw,MCdata=p_star))
   }

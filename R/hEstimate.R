@@ -25,7 +25,7 @@ hEst <- function(fit, i, B, t) {
   p<-p_mc$MCdata
   
   #How many in a batch:
-  step<-length(grep('_0', row.names(p_star), value=TRUE))
+  step<-length(grep('_0', row.names(p), value=TRUE))
   
   n<-nrow(fit$data)/step-1
   
@@ -73,6 +73,6 @@ hEst <- function(fit, i, B, t) {
   h_ca<-sum(Ca_match, na.rm = TRUE)/B
   h_cw<-sum(Cw_match, na.rm = TRUE)/B
   
-  return(list(h_cy=h_cy,h_ca=h_ca,h_cw=h_cw))
+  return(list(h_cy=h_cy,h_ca=h_ca,h_cw=h_cw,MCdata=p))
 
 }

@@ -5,6 +5,9 @@
 #' @param fit \code{fit} object obtained by \code{initEst}. 
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
+#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
+#' @param B How many samples to draw from P, as part of the h-density estimation.
+#' @param N How many sample to draw from P^*, as part of the h-density estimation. 
 #' @param MC How many Monte Carlo samples should be generated.
 #' @param maxIter Maximum number of iterations.
 #' @param tol Lower bound for epsilon. 
@@ -19,7 +22,7 @@
 #' @export
 #'
 
-mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
+mainTMLE <- function(fit, t, Anode, intervention, B=100, N=100, MC=100, maxIter=50, tol=10^-5) {
   
   #Implement with one epsilon:
   iter<-0
@@ -28,9 +31,8 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
   while(iter<=maxIter & (abs(eps) > tol)){
     iter<-iter+1
     
-    #Generate a new fit, using updated data:
-    fit<-initEst(data, freqW = 2,freqA = 2,freqY = 2)
-    clevCov<-cleverCov(fit,t=t,Anode=Anode,MC=MC)
+    #Calculate the clever covariate using the most current fit
+    clevCov<-cleverCov(fit,t=t,Anode=Anode,intervention=intervention,B=B,N=N,MC=MC)
     
     #Get all the clever covariates:
     Hy<-clevCov$Hy
@@ -87,6 +89,9 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
     
     data <- data.frame(data=pred_star[order(row.names(pred_star)), ])
     
+    #Generate a new fit, using updated data:
+    fit<-initEst(data,freqW=fit$freqW,freqA=fit$freqA,freqY=fit$freqY)
+    
     #Generate convinient dataframe for getEIC in case this is the last iteration:
     pred_star_fin<-cbind.data.frame(Y_star=Y_star, A_star=A_star, W_star=W_star)
   
@@ -94,6 +99,10 @@ mainTMLE <- function(fit, t, Anode, MC, maxIter=50, tol=10^-5) {
 
   #Update EIC:
   IC<-getEIC(clevCov, pred_star_fin, n)
+  
+  #Get final estimate at time t:
+  
+
 
   return(list(psi=psi, var.psi=var(IC)/n))
     
