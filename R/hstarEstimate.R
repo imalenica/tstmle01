@@ -21,7 +21,7 @@
 #' @export
 #'
 
-h_starEst <- function(fit, s, i, B, t, Anode, intervention=1) {
+hstarEst <- function(fit, s, i, B, t, Anode, intervention=1) {
 
   #Sample B observations from P^*:
   #Need to sample the full time-series because of the i-th comparison. 

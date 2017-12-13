@@ -1,6 +1,6 @@
-Package: tstmle
+Package: tstmle01
 Title: Targeted Maximum Likelihood Estimation of Causal Effects of Interventions
-    on a Single Time Series
+    on a Single Binary Time Series
 Version: 0.0.1
 Authors@R: c(
     person("Ivana", "Malenica", email = "imalenica@berkeley.edu",
@@ -8,11 +8,11 @@ Authors@R: c(
     person("Mark", "van der Laan", email = "laan@berkeley.edu",
            role = "aut"),       
     person("Jonathan", "Levy", email = "jlstiles@berkeley.edu",
-           role = "aut"),
+           role = "ctb"),
     person("Chris", "Kennedy", email = "ck37@berkeley.edu",
-           role = "aut"),
+           role = "ctb"),
     person("Nima", "Hejazi", email = "nhejazi@berkeley.edu",
-           role = "aut", comment = c(ORCID = "0000-0002-7127-2789"))
+           role = "ctb", comment = c(ORCID = "0000-0002-7127-2789"))
   )
 Description: Targeted learning for a Single Binary Time Series.
 Depends: R (>= 3.2.0)
@@ -29,8 +29,8 @@ Remotes:
     github::osofr/condensier,
     github::jeremyrcoyle/sl3
 License: MIT + file LICENSE
-URL: https://github.com/podTockom/tstmle
-BugReports: https://github.com/podTockom/tstmle/issues
+URL: https://github.com/podTockom/tstmle01
+BugReports: https://github.com/podTockom/tstmle01/issues
 Encoding: UTF-8
 LazyData: true
 VignetteBuilder: knitr

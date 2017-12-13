@@ -154,7 +154,7 @@ cleverCov <- function(fit, t, Anode, intervention=1, B=100, N=100, MC=100) {
       Hw_diff<-Hw_diff+Hw_diff_add
       
       #Get h^*
-      h_star_est<-h_starEst(fit, s, i, B, t, Anode, intervention)
+      h_star_est<-hstarEst(fit, s, i, B, t, Anode, intervention)
 
       #Sum over all s:
       hy_star<-hy_star+h_star_est$h_cy_star

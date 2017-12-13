@@ -29,7 +29,7 @@
 #' @export
 #'
 
-tstmle <- function(data,freqY,freqA,freqW,t,Anode,intervention,MC=100,B=100,N=100,
+tstmle01 <- function(data,freqY,freqA,freqW,t,Anode,intervention,MC=100,B=100,N=100,
                    maxIter=50,tol=10^-5,alpha=0.05) {
  
   #TO DO: add some checks for data, make sure it is in right order, format, etc.
