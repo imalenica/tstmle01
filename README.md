@@ -10,18 +10,18 @@ R/`tstmle01`
 What's `tstmle01`?
 ------------------
 
-This repo provides basic implementation of the targeted maximum likelihood estimation of causal effects based on the observation of a single binary time series. The approach considers the case where at each time point in a time series, a covariate vector, treatment, and outcome are observed in chronological order. A family of causal effects are defined as the impacts of stochastic interventions on a subset of the treatment nodes on a future outcome.
+This package provides basic implementation of the targeted maximum likelihood estimation of causal effects based on the observation of a single binary time series. The approach considers the case where at each time point in a time series, a covariate vector, treatment, and outcome are observed in chronological order. A family of causal effects are defined as the impacts of stochastic interventions on a subset of the treatment nodes on a future outcome.
 
 This general formulation of the statistical estimation problem subsumes many other important estimation problems, including but not limited to classical time series models, group sequential adaptive designs, and even independent and identically distributed data where the summary measure of the past is simply the empty set.
 
-For the actual R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).
+For the (faster) R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).
 
 ------------------------------------------------------------------------
 
 Installation
 ------------
 
-You can install a stable release of `tstmle` from GitHub via [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with:
+You can install a stable release of `tstmle01` from GitHub via [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with:
 
 ``` r
 devtools::install_github("podTockom/tstmle01")

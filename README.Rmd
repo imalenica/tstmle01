@@ -32,13 +32,13 @@ series models, group sequential adaptive designs, and even independent and
 identically distributed data where the summary measure of the past is simply the
 empty set. 
 
-For the actual (fast) R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).  
+For the (faster) R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).  
 
 ---
 
 ## Installation
 
-You can install a stable release of `tstmle` from GitHub via
+You can install a stable release of `tstmle01` from GitHub via
 [`devtools`](https://www.rstudio.com/products/rpackages/devtools/) with:
 
 ```{r gh-installation, eval = FALSE}
