@@ -1,21 +1,19 @@
 library(Hmisc)
 
 set.seed(2)
-data<-read.csv("~/Dropbox/Berkeley_Projects/School Projects/COMPSCI294_F2017_Project/data/data.csv", row.names = 1)
+data<-read.csv("~/Dropbox/Berkeley_Projects/Software/tstmle01/data/data.csv", row.names = 1)
 names<-row.names(data)
 
-#Make it a bit easier:
-data<-data.frame(data=data[1:303,])
-row.names(data)<-names[1:303]
+#Make it very easy:
+data<-data.frame(data=data[1:33,])
+row.names(data)<-names[1:33]
 
 #Get initial estimates of the process:
 fit<-initEst(data, freqW = 2,freqA = 2,freqY = 2)
 
-#Calculate the clever covariate with default settings (B=N=MC=100)
-#cleverCovariate<-cleverCov(fit,t=5,Anode=3, intervention=1)
-
 #Get estimates:
-est<-mainTMLE(fit, t=5, Anode=5)
+est1<-mainTMLE(fit, t=5, Anode=3, intervention=1,B=50,N=50,MC=50,maxIter=20)
+est2<-mainTMLE(fit, t=5, Anode=3,B=50,N=50,MC=50,maxIter=20)
 
 
 
