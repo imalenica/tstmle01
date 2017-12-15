@@ -23,7 +23,7 @@
 #' }
 #'
 #' @importFrom Hmisc Lag
-#' @importFrom stats glm as.formula quasibinomial
+#' @importFrom stats glm as.formula quasibinomial complete.cases
 #'
 #' @export
 #
@@ -40,7 +40,7 @@ initEst <- function(data, freqW = NULL, freqA = NULL, freqY = NULL) {
     data_est_full <- cbind.data.frame(data = data, res)
 
     # Drop time 0 for estimation
-    cc <- complete.cases(data_est_full)
+    cc <- stats::complete.cases(data_est_full)
     data_est <- data_est_full[cc, ]
     data_est <- data.frame(data_est[-1, ])
 
@@ -52,7 +52,7 @@ initEst <- function(data, freqW = NULL, freqA = NULL, freqY = NULL) {
     # Estimate the process coefficients. Should allow better strategies later on
     fitW <- stats::glm(formula = stats::as.formula("data ~ ."),
                        family = stats::quasibinomial(link = "logit"), data = W)
-    fitA <- stats::glm(formula = stats::as.formual("data ~ ."),
+    fitA <- stats::glm(formula = stats::as.formula("data ~ ."),
                        family = stats::quasibinomial(link = "logit"), data = A)
     fitY <- stats::glm(formula = stats::as.formula("data ~ ."),
                        family = stats::quasibinomial(link = "logit"), data = Y)

@@ -25,12 +25,7 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    rmarkdown,
-    tmle3
-Remotes:
-    github::osofr/condensier,
-    github::jeremyrcoyle/sl3,
-    github::jeremyrcoyle/tmle3
+    rmarkdown
 License: MIT + file LICENSE
 URL: https://github.com/podTockom/tstmle01
 BugReports: https://github.com/podTockom/tstmle01/issues

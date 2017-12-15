@@ -1,4 +1,3 @@
 library(testthat)
-library(tmle3)
 
-test_check("tmle3")
+#test_check("tstmle")

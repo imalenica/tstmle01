@@ -32,7 +32,7 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100,
   n <- nrow(fit$data) / step - 1
 
   # Generate clever covariates for each of the likelihood components: W, A, Y
-  #' and EIF
+  # and efficient influence function (EIF)
   Hy_cc <- matrix(nrow = n, ncol = 1)
   Ha_cc <- matrix(nrow = n, ncol = 1)
   Hw_cc <- matrix(nrow = n, ncol = 1)

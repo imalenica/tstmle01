@@ -43,6 +43,7 @@
 #' }
 #'
 #' @importFrom stats complete.cases rbinom plogis predict
+#' @importFrom Hmisc Lag
 #'
 #' @export
 #
@@ -116,7 +117,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
 
     # This gives further up lag first
     res <- lapply((step * lag + 1):(fit$freqW + step * lag), function(x) {
-      Lag(data[, 1], x)
+      Hmisc::Lag(data[, 1], x)
     })
     res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
                       stringsAsFactors = FALSE)
@@ -151,7 +152,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
     # TODO: Change this to an option where we can have varying dimensions for W,A,Y.
 
     res <- lapply((1 + step * lag):(fit$freqW + step * lag), function(x) {
-      Lag(data[, 1], x)
+      Hmisc::Lag(data[, 1], x)
     })
     res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
                       stringsAsFactors = FALSE)

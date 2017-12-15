@@ -54,7 +54,7 @@ getEIC <- function(clevCov, pred_star, n) {
 
   # Calculate the EIC:
   for (i in seq_len(n)) {
-    preds <- getPred(fit, i)
+    preds <- getPred(fit = clevCov, i)
     D[i, ] <- Hy[i, ] * (preds$Y - pred_star[i, 1]) + Ha[i, ] *
       (preds$A - pred_star[i, 2]) + Hw[i, ] * (preds$W - pred_star[i, 3])
   }
