@@ -10,21 +10,17 @@ mainTMLE(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
 
-\item{t}{Outcome time point of interest. It must be greater than the
-intervention node A.}
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 
 \item{Anode}{Intervention node.}
 
-\item{intervention}{Specify %g^*, of %P(A \mid \text{past}). Right now, this
-supports only 1/0 type interventions.}
+\item{intervention}{Specify %g^*, of %P(A \mid \text{past}). Right now, this supports only 1/0 type interventions.}
 
 \item{alpha}{alpha}
 
-\item{B}{How many samples to draw from P, as part of the h-density
-estimation.}
+\item{B}{How many samples to draw from P, as part of the h-density estimation.}
 
-\item{N}{How many sample to draw from %P^*, as part of the h-density
-estimation.}
+\item{N}{How many sample to draw from %P^*, as part of the h-density estimation.}
 
 \item{MC}{How many Monte Carlo samples should be generated.}
 

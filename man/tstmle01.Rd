@@ -2,15 +2,14 @@
 % Please edit documentation in R/tstmle01.R
 \name{tstmle01}
 \alias{tstmle01}
-\title{Time-Series Targeted Minimum Loss Estimation (tstmle)}
+\title{Time-Series Targeted Minimum Loss Estimation for Binary Time Series (tstmle01)}
 \usage{
 tstmle01(data, freqY, freqA, freqW, t, Anode, intervention1,
   intervention2 = NULL, MC = 100, B = 100, N = 100, maxIter = 50,
   tol = 10^-5, alpha = 0.05)
 }
 \arguments{
-\item{data}{data.frame object containg the time series with relevant time
-ordering.}
+\item{data}{data.frame object containg the time series with relevant time ordering.}
 
 \item{freqY}{A numeric specifying the Markov order for Y nodes.}
 
@@ -18,24 +17,19 @@ ordering.}
 
 \item{freqW}{A numeric specifying the Markov order for W nodes.}
 
-\item{t}{Outcome time point of interest. It must be greater than the
-intervention node A.}
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 
 \item{Anode}{Intervention node.}
 
-\item{intervention1}{Specify g^*, of P(A|past). Right now supports only 1/0
-type interventions.}
+\item{intervention1}{Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.}
 
-\item{intervention2}{Specify g^* to compate to. Right now supports only 1/0
-type interventions.}
+\item{intervention2}{Specify g^* to compate to. Right now supports only 1/0 type interventions.}
 
 \item{MC}{How many Monte Carlo samples should be generated.}
 
-\item{B}{How many samples to draw from P, as part of the h-density
-estimation.}
+\item{B}{How many samples to draw from P, as part of the h-density estimation.}
 
-\item{N}{How many sample to draw from P^*, as part of the h-density
-estimation.}
+\item{N}{How many sample to draw from P^*, as part of the h-density estimation.}
 
 \item{maxIter}{Maximum number of iterations.}
 
@@ -54,5 +48,6 @@ An object of class \code{tstmle}.
 \description{
 This function returns the final estimate of the expected value the outcome at
 time t, under intervention (or no intervention) as specified by the user. In
-addition, it returns the variance of the estimate and confidence intervals.
+addition, it returns the variance of the estimate, confidence intervals, and p-value
+as dictated by specified alpha.
 }

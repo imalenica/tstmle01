@@ -7,11 +7,12 @@
 #' Get actual and predicted values for time t, based on the previously obtained
 #' fit and actual Cs. Minimum t is 1.
 #'
-#' @param fit ...
-#' @param t ...
+#' @param fit \code{fit} object obtained by \code{initEst}.
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #'
 #' @importFrom stats predict
 #
+
 getPred <- function(fit, t) {
   data <- fit$data
   data_lag <- fit$lag_data
@@ -29,8 +30,7 @@ getPred <- function(fit, t) {
   A_pred <- stats::predict(fit$A, data_lag[(t * step) - 1, ], type = "response")
   Y_pred <- stats::predict(fit$A, data_lag[(t * step), ], type = "response")
 
-  return(list(W = W, A = A, Y = Y, W_pred = W_pred, A_pred = A_pred,
-              Y_pred = Y_pred))
+  return(list(W = W, A = A, Y = Y, W_pred = W_pred, A_pred = A_pred, Y_pred = Y_pred))
 }
 
 ################################################################################
@@ -39,9 +39,9 @@ getPred <- function(fit, t) {
 #'
 #' Recompute the EIF based on the previously calculated clever covariates.
 #'
-#' @param clevCov ...
-#' @param pred_star ...
-#' @param n ...
+#' @param clevCov \code{clevCov} object obtained by \code{cleverCov}.
+#' @param pred_star Updated predictions from \code{mainTMLE}.
+#' @param n Number of samples (time-points).
 #
 getEIC <- function(clevCov, pred_star, n) {
 
@@ -67,9 +67,10 @@ getEIC <- function(clevCov, pred_star, n) {
 #'
 #' Sample from discrete uniform distribution
 #'
-#' @param n ...
-#' @param k ...
+#' @param n Number of points to sample from.
+#' @param k Number of samples sampled. 
 #
+
 rdunif <- function(n, k) {
   out <- sample(seq_len(k), n, replace = TRUE)
   return(out)

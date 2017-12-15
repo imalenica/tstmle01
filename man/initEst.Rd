@@ -7,8 +7,7 @@
 initEst(data, freqW = NULL, freqA = NULL, freqY = NULL)
 }
 \arguments{
-\item{data}{data.frame object containg the time series with relevant time
-ordering.}
+\item{data}{data.frame object containg the time series with relevant time ordering.}
 
 \item{freqW}{A numeric specifying the Markov order for W nodes.}
 

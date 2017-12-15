@@ -1,11 +1,9 @@
 #' h-density estimation
 #'
-#' This function evaluates the h-density, necessary for the clever covariate
-#' calculation.
+#' This function evaluates the h-density, necessary for the clever covariate calculation.
 #'
 #' @param fit \code{fit} object obtained by \code{initEst}.
-#' @param i Where we are in the i loop (part of the clever covariate
-#'  calculation).
+#' @param i Where we are in the i loop (part of the clever covariate calculation).
 #' @param B Number of observations to sample from P and P^*.
 #' @param t Outcome time point of interest. It must be greater than the
 #'  intervention node A.
@@ -52,8 +50,7 @@ hEst <- function(fit, i, B, t) {
     res <- lapply(1:fit$freqW, function(x) {
       Lag(p[, b], x)
     })
-    res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
-                      stringsAsFactors = FALSE)
+    res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),stringsAsFactors = FALSE)
     data_est_full <- cbind.data.frame(data = p[, b], res)
     data_est_full <- data_est_full[, -1]
 
@@ -86,20 +83,15 @@ hEst <- function(fit, i, B, t) {
 
 #' h*-density estimation
 #'
-#' This function evaluates the %h^*-density, necessary for the clever covariate
-#' calculation.
+#' This function evaluates the %h^*-density, necessary for the clever covariate calculation.
 #'
 #' @param fit \code{fit} object obtained by \code{initEst}.
-#' @param s Where we are in the s loop (part of the clever covariate
-#'  calculation).
-#' @param i Where we are in the i loop (part of the clever covariate
-#'  calculation).
+#' @param s Where we are in the s loop (part of the clever covariate calculation).
+#' @param i Where we are in the i loop (part of the clever covariate calculation).
 #' @param B Number of observations to sample from P and P^*.
-#' @param t Outcome time point of interest. It must be greater than the
-#'  intervention node A.
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0
-#'  type interventions.
+#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -111,6 +103,7 @@ hEst <- function(fit, i, B, t) {
 #'
 #' @export
 #
+
 hstarEst <- function(fit, s, i, B, t, Anode, intervention = 1) {
 
   # Sample B observations from P^*:
@@ -139,9 +132,11 @@ hstarEst <- function(fit, s, i, B, t, Anode, intervention = 1) {
   Cw_match <- data.frame(matrix(nrow = B, ncol = 1))
 
   for (b in 1:B) {
+    
     res <- lapply(1:fit$freqW, function(x) {
       Lag(p_star[, b], x)
     })
+    
     res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
                       stringsAsFactors = FALSE)
     data_est_full <- cbind.data.frame(data = p_star[, b], res)
@@ -166,7 +161,6 @@ hstarEst <- function(fit, s, i, B, t, Anode, intervention = 1) {
   h_ca <- sum(Ca_match, na.rm = TRUE) / B
   h_cw <- sum(Cw_match, na.rm = TRUE) / B
 
-  return(list(h_cy_star = h_cy, h_ca_star = h_ca, h_cw_star = h_cw,
-              MCdata = p_star))
+  return(list(h_cy_star = h_cy, h_ca_star = h_ca, h_cw_star = h_cw, MCdata = p_star))
 }
 

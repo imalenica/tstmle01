@@ -3,15 +3,11 @@
 #' This function runs the TMLE and computes the estimate.
 #'
 #' @param fit \code{fit} object obtained by \code{initEst}.
-#' @param t Outcome time point of interest. It must be greater than the
-#'  intervention node A.
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this
-#'  supports only 1/0 type interventions.
-#' @param B How many samples to draw from P, as part of the h-density
-#'  estimation.
-#' @param N How many sample to draw from %P^*, as part of the h-density
-#'  estimation.
+#' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this supports only 1/0 type interventions.
+#' @param B How many samples to draw from P, as part of the h-density estimation.
+#' @param N How many sample to draw from %P^*, as part of the h-density estimation.
 #' @param MC How many Monte Carlo samples should be generated.
 #' @param maxIter Maximum number of iterations.
 #' @param tol Lower bound for epsilon.
@@ -27,6 +23,7 @@
 #'
 #' @export
 #
+
 mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
                      N = 100, MC = 100, maxIter = 50, tol=10 ^ -5) {
 
@@ -43,11 +40,11 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
   row.names(randDat) <- row.names(data)[1:step]
 
   while (iter <= maxIter & (abs(eps) > tol)) {
+    
     iter <- iter + 1
 
     # Calculate the clever covariate using the most current fit
-    clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention,
-                         B = B, N = N, MC = MC)
+    clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, B = B, N = N, MC = MC)
 
     # Get all the clever covariates:
     Hy <- clevCov$Hy
@@ -70,6 +67,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 
     # Get actual values and predictions:
     for (i in seq_len(n)) {
+      
       preds <- getPred(fit, i)
 
       Y[i, ] <- preds$Y
@@ -88,8 +86,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 
     d <- cbind.data.frame(observed, pred, H)
 
-    eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H,
-                                  data = d, family = "quasibinomial"))
+    eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))
     eps[is.na(eps)] <- 0
 
     # Update:
@@ -98,8 +95,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     W_star <- stats::plogis(stats::qlogis(W_pred) + eps * Hw)
 
     # Make it easier to recombine in W,A,Y fashion.
-    pred_star <- data.frame(data = c(Y_star = Y_star, A_star = A_star,
-                                     W_star = W_star))
+    pred_star <- data.frame(data = c(Y_star = Y_star, A_star = A_star, W_star = W_star))
     name <- c(paste0(seq(1:n), "_C"), paste0(seq(1:n), "_B"), paste0(seq(1:n), "_A"))
     row.names(pred_star) <- name
 
@@ -111,8 +107,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     fit <- initEst(data, freqW = fit$freqW, freqA = fit$freqA, freqY = fit$freqY)
 
     # Generate convinient dataframe for getEIC in case this is the last iteration:
-    pred_star_fin <- cbind.data.frame(Y_star = Y_star, A_star = A_star,
-                                      W_star = W_star)
+    pred_star_fin <- cbind.data.frame(Y_star = Y_star, A_star = A_star, W_star = W_star)
   }
 
   # Update EIC:

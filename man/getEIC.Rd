@@ -7,11 +7,11 @@
 getEIC(clevCov, pred_star, n)
 }
 \arguments{
-\item{clevCov}{...}
+\item{clevCov}{\code{clevCov} object obtained by \code{cleverCov}.}
 
-\item{pred_star}{...}
+\item{pred_star}{Updated predictions from \code{mainTMLE}.}
 
-\item{n}{...}
+\item{n}{Number of samples (time-points).}
 }
 \description{
 Recompute the EIF based on the previously calculated clever covariates.

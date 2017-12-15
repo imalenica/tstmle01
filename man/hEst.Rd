@@ -9,8 +9,7 @@ hEst(fit, i, B, t)
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
 
-\item{i}{Where we are in the i loop (part of the clever covariate
-calculation).}
+\item{i}{Where we are in the i loop (part of the clever covariate calculation).}
 
 \item{B}{Number of observations to sample from P and P^*.}
 
@@ -26,6 +25,5 @@ An object of class \code{tstmle}.
 }
 }
 \description{
-This function evaluates the h-density, necessary for the clever covariate
-calculation.
+This function evaluates the h-density, necessary for the clever covariate calculation.
 }

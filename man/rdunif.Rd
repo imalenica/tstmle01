@@ -7,9 +7,9 @@
 rdunif(n, k)
 }
 \arguments{
-\item{n}{...}
+\item{n}{Number of points to sample from.}
 
-\item{k}{...}
+\item{k}{Number of samples sampled.}
 }
 \description{
 Sample from discrete uniform distribution

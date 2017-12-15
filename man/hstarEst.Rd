@@ -9,21 +9,17 @@ hstarEst(fit, s, i, B, t, Anode, intervention = 1)
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
 
-\item{s}{Where we are in the s loop (part of the clever covariate
-calculation).}
+\item{s}{Where we are in the s loop (part of the clever covariate calculation).}
 
-\item{i}{Where we are in the i loop (part of the clever covariate
-calculation).}
+\item{i}{Where we are in the i loop (part of the clever covariate calculation).}
 
 \item{B}{Number of observations to sample from P and P^*.}
 
-\item{t}{Outcome time point of interest. It must be greater than the
-intervention node A.}
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 
 \item{Anode}{Intervention node.}
 
-\item{intervention}{Specify g^*, of P(A|past). Right now supports only 1/0
-type interventions.}
+\item{intervention}{Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.}
 }
 \value{
 An object of class \code{tstmle}.
@@ -33,6 +29,5 @@ An object of class \code{tstmle}.
 \item{h_cw_star}{Empirical estimate of h_cw under the intervention g^*.}}
 }
 \description{
-This function evaluates the %h^*-density, necessary for the clever covariate
-calculation.
+This function evaluates the %h^*-density, necessary for the clever covariate calculation.
 }

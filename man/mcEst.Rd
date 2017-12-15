@@ -5,8 +5,8 @@
 \title{Compute the Monte Carlo estimate}
 \usage{
 mcEst(fit, start = 1, node = "W", t, Anode, intervention = NULL,
-  lag = 0, MC, returnMC = FALSE, returnMC_full = FALSE, clevCov = FALSE,
-  set = NULL)
+  lag = 0, MC = 100, returnMC = FALSE, returnMC_full = FALSE,
+  clevCov = FALSE, set = NULL)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -16,8 +16,7 @@ earliest time point is 1. For the clever covariate, this is also our s.}
 
 \item{node}{Start generating Monte Carlo estimates from O_i node W, A or Y.}
 
-\item{t}{Outcome time point of interest. It must be greater than the
-intervention node A.}
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 
 \item{Anode}{Intervention node.}
 
@@ -37,26 +36,21 @@ Also, note that lag should be equal or smaller than start.}
 \item{returnMC_full}{If \code{TRUE}, returns all full MC draws.}
 
 \item{clevCov}{If \code{TRUE}, this MC is used for the calculation of the
-clever covariate. Instead of observed data, it used intervened %P^* for
-further MC draws.}
+clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.}
 
-\item{set}{Set the s node to either 1 or 0. Used for the clever covariate
-calculation.}
+\item{set}{Set the s node to either 1 or 0. Used for the clever covariate calculation.}
 }
 \value{
 An object of class \code{tstmle}.
 \describe{
-\item{estimate}{Mean of the outcome at time t under specified intervention,
- or no intervention.}
+\item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
 \item{outcome}{Outcome at time t for each MC interation.}
 \item{intervention}{Intervention specified.}
 \item{MC}{How many Monte Carlo samples should be generated.}
 \item{Anode}{Intervention node as a function of O_i.}
-\item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever
- covariate calculation).}
+\item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).}
 \item{s_full}{Intervened outcomes given s=1 or s=0.}
-\item{MCdata}{If \code{returnMC} is \code{TRUE}, returns a \code{data.frame}
- with MC time-series.}
+\item{MCdata}{If \code{returnMC} is \code{TRUE}, returns a \code{data.frame} with MC time-series.}
 }
 }
 \description{

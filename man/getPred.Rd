@@ -7,9 +7,9 @@
 getPred(fit, t)
 }
 \arguments{
-\item{fit}{...}
+\item{fit}{\code{fit} object obtained by \code{initEst}.}
 
-\item{t}{...}
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 }
 \description{
 Get actual and predicted values for time t, based on the previously obtained

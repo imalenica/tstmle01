@@ -10,5 +10,6 @@
 #'   \item{A}{A binary variable representing an intervention of interest.}
 #'   \item{W}{A binary variable representing a baseline covariate of interest.}
 #' }
+
 "ts_samp_data"
 

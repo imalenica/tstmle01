@@ -3,16 +3,12 @@
 #' This function calculates the clever covariate for each time point.
 #'
 #' @param fit \code{fit} object obtained by \code{initEst}.
-#' @param t Outcome time point of interest. It must be greater than the
-#'  intervention node A.
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this
-#'  supports only 1/0 type interventions.
+#' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this supports only 1/0 type interventions.
 #' @param MC How many Monte Carlo samples should be generated.
-#' @param B How many samples to draw from P, as part of the h-density
-#'  estimation.
-#' @param N How many sample to draw from %P^*, as part of the h-density
-#'  estimation.
+#' @param B How many samples to draw from P, as part of the h-density estimation.
+#' @param N How many sample to draw from %P^*, as part of the h-density estimation.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -26,8 +22,9 @@
 #'
 #' @export
 #
-cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, 
-                      MC = 100) {
+
+cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 100) {
+  
   step <- length(grep("_1$", row.names(fit$data), value = TRUE))
   n <- nrow(fit$data) / step - 1
 
@@ -58,6 +55,7 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100,
   fit[["p_star"]] <- p_star$MCdata
 
   for (i in seq_len(n)) {
+    
     Hy_diff <- 0
     Ha_diff <- 0
     Hw_diff <- 0
@@ -68,112 +66,130 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100,
 
     for (s in seq_len(t)) {
 
-      # Example for Hy:
-      # Compute H_{y(s)}(C_y(i))=E[Y_{g^*}|Y(s)=1,C_y(s)=C_y(i)] -
-      #                          E[Y_{g^*}|Y(s)=0,C_y(s)=C_y(i)]
-
       if (s < i) {
         # Look into the future to condition on.
         if (s == t) {
-          # If s=t, then just return Y^* for Hy.
+          #Y; If s=t, then just return Y^* for Hy.
           Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
-
-          Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
+          
+          #A
+          Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode, 
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
           Hw_diff_add <- Hw1$s - Hw0$s
+          
         } else {
+          #Y
           Hy1 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
           Hy_diff_add <- Hy1$s - Hy0$s
-
+          
+          #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
           Hw_diff_add <- Hw1$s - Hw0$s
         }
+        
       } else if (s == i) {
         # Usual setting.
         if (s == t) {
-          # If s=t, then just return Y^* for Hy.
+          
+          #Y; If s=t, then just return Y^* for Hy.
           Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
 
+          #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
           Hw_diff_add <- Hw1$s - Hw0$s
+          
         } else {
+          #Y
           Hy1 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
           Hy_diff_add <- Hy1$s - Hy0$s
 
+          #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
           Hw_diff_add <- Hw1$s - Hw0$s
         }
+        
       } else if (s > i) {
         # Look further in the past since s>i.
         if (s == t) {
-          # If s=t, then just return Y^* for Hy.
+          
+          #Y; If s=t, then just return Y^* for Hy.
           Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
 
+          #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
           Hw_diff_add <- Hw1$s - Hw0$s
+          
         } else {
+          #Y
           Hy1 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
           Hy_diff_add <- Hy1$s - Hy0$s
 
+          #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
           Ha_diff_add <- Ha1$s - Ha0$s
 
+          #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
@@ -217,12 +233,14 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100,
 
     # Store clever covariates for each time point
     Hy_cc[i, ] <- Hy_diff * hy_ratio
+    
     # On intervention node 0:
     if (i == Anode) {
       Ha_cc[i, ] <- 0
     } else {
       Ha_cc[i, ] <- Ha_diff * ha_ratio
     }
+    
     Hw_cc[i, ] <- Hw_diff * hw_ratio
 
     # Calculate the EIC:
@@ -231,11 +249,10 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100,
       (preds$A - preds$A_pred) + Hw_cc[i, ] * (preds$W - preds$W_pred)
   }
 
-  return(list(
-    Hy = Hy_cc, Ha = Ha_cc, Hw = Hw_cc, Dbar = D,
-    h_star = list(Hy_star = hy_star_res, Ha_star = ha_star_res,
-                  Hw_star = hw_star_res),
-    h = list(Hy = hy_res, Ha = ha_res, Hw = hw_res)
-  ))
+  return(list(Hy = Hy_cc, Ha = Ha_cc, Hw = Hw_cc, Dbar = D,
+              h_star = list(Hy_star = hy_star_res, Ha_star = ha_star_res,
+                            Hw_star = hw_star_res),
+              h = list(Hy = hy_res, Ha = ha_res, Hw = hw_res)
+        ))
 }
 

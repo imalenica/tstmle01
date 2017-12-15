@@ -4,8 +4,7 @@
 #' time series observation. Later on, this should include more complex
 #' relationships instead of just past variables and better estimation methods.
 #'
-#' @param data data.frame object containg the time series with relevant time
-#'  ordering.
+#' @param data data.frame object containg the time series with relevant time ordering.
 #' @param freqW A numeric specifying the Markov order for W nodes.
 #' @param freqA A numeric specifying the Markov order for A nodes.
 #' @param freqY A numeric specifying the Markov order for Y nodes.
@@ -27,7 +26,9 @@
 #'
 #' @export
 #
+
 initEst <- function(data, freqW = NULL, freqA = NULL, freqY = NULL) {
+  
   if (all.equal(freqA, freqW, freqY)) {
 
     # Lag past

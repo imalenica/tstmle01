@@ -8,8 +8,7 @@
 #' @param start Start generating Monte Carlo estimates from this point %O_i. The
 #'  earliest time point is 1. For the clever covariate, this is also our s.
 #' @param node Start generating Monte Carlo estimates from O_i node W, A or Y.
-#' @param t Outcome time point of interest. It must be greater than the
-#'  intervention node A.
+#' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
 #' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this
 #'  supports only 1/0 type interventions.
@@ -22,24 +21,19 @@
 #' @param returnMC If \code{TRUE}, returns all MC draws up until outcome time.
 #' @param returnMC_full If \code{TRUE}, returns all full MC draws.
 #' @param clevCov If \code{TRUE}, this MC is used for the calculation of the
-#'  clever covariate. Instead of observed data, it used intervened %P^* for
-#'  further MC draws.
-#' @param set Set the s node to either 1 or 0. Used for the clever covariate
-#'  calculation.
+#'  clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.
+#' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
 #'
 #' @return An object of class \code{tstmle}.
 #' \describe{
-#' \item{estimate}{Mean of the outcome at time t under specified intervention,
-#'  or no intervention.}
+#' \item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
 #' \item{outcome}{Outcome at time t for each MC interation.}
 #' \item{intervention}{Intervention specified.}
 #' \item{MC}{How many Monte Carlo samples should be generated.}
 #' \item{Anode}{Intervention node as a function of O_i.}
-#' \item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever
-#'  covariate calculation).}
+#' \item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).}
 #' \item{s_full}{Intervened outcomes given s=1 or s=0.}
-#' \item{MCdata}{If \code{returnMC} is \code{TRUE}, returns a \code{data.frame}
-#'  with MC time-series.}
+#' \item{MCdata}{If \code{returnMC} is \code{TRUE}, returns a \code{data.frame} with MC time-series.}
 #' }
 #'
 #' @importFrom stats complete.cases rbinom plogis predict
@@ -47,9 +41,9 @@
 #'
 #' @export
 #
-mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
-                  lag = 0, MC, returnMC = FALSE, returnMC_full = FALSE,
-                  clevCov = FALSE, set = NULL) {
+
+mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag = 0, 
+                  MC=100, returnMC = FALSE, returnMC_full = FALSE, clevCov = FALSE, set = NULL) {
 
   # Checks
   if (start < lag) {
@@ -77,6 +71,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
 
   # If estMC is used for clever covariate calculation, use P^*.
   if (clevCov == TRUE) {
+    
     data <- fit$p_star
 
     # Set s node to "set" (1/0), for Y, A, W.
@@ -113,6 +108,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
   # Should default to whatever was estimated in initEst()
 
   if (lag < 0) {
+    
     # If lag is negative, move the time series up w.r.t. reference
 
     # This gives further up lag first
@@ -145,6 +141,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
     # Get actual index for start, depended on W.
     # (right now, start is set to be the batch, not actual index)
     start <- start * step + 1
+    
   } else if (lag >= 0) {
 
     # This is ok under the assumption orders are the same dimension.
@@ -197,6 +194,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
   res <- matrix(nrow = MC, ncol = 1)
 
   for (B in 1:MC) {
+    
     data_lag <- data_lag_origin
 
     # Keep track where we are in the loop
@@ -212,14 +210,11 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
       # This is our i in the clever covariate.
 
       if (iter == 1) {
+        
+        # Start at A.
         if (node == "A") {
-
-          # Start at A.
           if (is.null(intervention)) {
-            newA <- stats::rbinom(1, 1,
-                                  stats::plogis(stats::predict(fit$A,
-                                                               data_lag[i + 1, ],
-                                                               type = "response")))
+            newA <- stats::rbinom(1, 1,stats::plogis(stats::predict(fit$A,data_lag[i + 1, ],type = "response")))
             # Update for Y
             data_lag[(i + 2), 1] <- newA
           } else if (!is.null(intervention)) {
@@ -228,24 +223,22 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
               # Update for Y
               data_lag[(i + 2), 1] <- newA
             } else {
-              newA <- stats::rbinom(1, 1,
-                                    stats::plogis(stats::predict(fit$A,
-                                                                 data_lag[i + 1, ],
-                                                                 type = "response")))
+              newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A,data_lag[i + 1, ],type = "response")))
               # Update for Y
               data_lag[(i + 2), 1] <- newA
             }
           }
 
-          newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y,
-                                                                   data_lag[i + 2, ],
-                                                                   type = "response")))
+          newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y,data_lag[i + 2, ],type = "response")))
+          
           # Update for next W
           data_lag[(i + 3), 2] <- newA
           data_lag[(i + 3), 1] <- newY
 
           iter <- iter + 1
-        } else if (node == "Y") {
+         
+        #Start at Y. 
+        }else if (node == "Y") {
 
           # Now we skip both W and A, start generating MC draws from Y.
           newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y, data_lag[i + 2, ], type = "response")))
@@ -253,7 +246,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
           data_lag[(i + 3), 1] <- newY
 
           iter <- iter + 1
-        } else if (node == "W") {
+         
+        #Start at W.   
+        }else if (node == "W") {
 
           # Don't skip anything, start with W.
           newW <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$W, data_lag[i, ], type = "response")))
@@ -287,7 +282,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
 
           iter <- iter + 1
         }
-      } else {
+        
+      #Later on iterations.  
+      }else {
 
         # For later iterations, do as always.
         # MC draws start from "start" and W node.
@@ -328,7 +325,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
     outcome[B, ] <- newY
 
     if (returnMC == TRUE || returnMC_full == TRUE) {
+      
       data_lag <- data_lag[-1, 1]
+      
       # Collect changed part of the series (from start until the end)
       if (node == "W") {
         retMC[((start + step):nrow(retMC)), B] <- data_lag[(start:length(data_lag))]
@@ -347,17 +346,16 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL,
   }
 
   if (returnMC == TRUE || returnMC_full == TRUE) {
-    return(list(
-      estimate = mean(outcome), outcome = outcome, intervention = intervention,
-      MC = MC, t = t, Anode = Anode,
-      s = mean(res, na.rm = TRUE), s_full = res, MCdata = retMC
-    ))
-  } else {
-    return(list(
-      estimate = mean(outcome), outcome = outcome, intervention = intervention,
-      MC = MC, t = t, Anode = Anode,
-      s = mean(res, na.rm = TRUE), s_full = res
-    ))
+    return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,
+                MC = MC, t = t, Anode = Anode,
+                s = mean(res, na.rm = TRUE), s_full = res, MCdata = retMC
+           ))
+    
+  }else {
+    return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,
+                MC = MC, t = t, Anode = Anode,
+                s = mean(res, na.rm = TRUE), s_full = res
+          ))
   }
 }
 
