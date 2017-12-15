@@ -48,9 +48,9 @@ initEst <- function(data, freqW=NULL, freqA=NULL, freqY=NULL) {
     Y<-data_est[grep('Y', row.names(data_est), value=TRUE),]
     
     #Estimate the process coefficients. This should allow better strategies later on
-    fitW<-glm(formula = data ~ ., family = binomial(link = "logit"), data = W)
-    fitA<-glm(formula = data ~ ., family = binomial(link = "logit"), data = A)
-    fitY<-glm(formula = data ~ ., family = binomial(link = "logit"), data = Y)
+    fitW<-glm(formula = data ~ ., family = quasibinomial(link = "logit"), data = W)
+    fitA<-glm(formula = data ~ ., family = quasibinomial(link = "logit"), data = A)
+    fitY<-glm(formula = data ~ ., family = quasibinomial(link = "logit"), data = Y)
     
     fit<-list(W=fitW,A=fitA,Y=fitY,freqW=freqW,freqA=freqA,freqY=freqY,data=data,lag_data=data_est)
     

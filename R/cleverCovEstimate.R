@@ -26,7 +26,7 @@
 
 cleverCov <- function(fit, t, Anode, intervention=1, B=100, N=100, MC=100) {
 
-  step<-length(grep('_0', row.names(fit$data), value=TRUE))
+  step<-length(grep('_1$', row.names(fit$data), value=TRUE))
   n<-nrow(fit$data)/step-1
   
   #Generate clever covariates for each of the likelihood components: W,A,Y and EIC

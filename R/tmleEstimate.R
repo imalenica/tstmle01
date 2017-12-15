@@ -11,6 +11,7 @@
 #' @param MC How many Monte Carlo samples should be generated.
 #' @param maxIter Maximum number of iterations.
 #' @param tol Lower bound for epsilon. 
+#' @param alpha alpha
 #' 
 #' @return An object of class \code{tstmle}.
 #' \describe{
@@ -22,11 +23,19 @@
 #' @export
 #'
 
-mainTMLE <- function(fit, t, Anode, intervention, B=100, N=100, MC=100, maxIter=50, tol=10^-5) {
+mainTMLE <- function(fit, t, Anode, intervention=NULL, alpha=0.05, B=100, N=100, MC=100, maxIter=50, tol=10^-5) {
   
   #Implement with one epsilon:
   iter<-0
   eps<-Inf
+  
+  #How many in a batch:
+  step<-length(grep('_0', row.names(fit$data), value=TRUE))
+  
+  #First 3
+  data<-data.frame(fit$data)
+  randDat<-data.frame(data=data[1:(step),])
+  row.names(randDat)<-row.names(data)[1:step]
   
   while(iter<=maxIter & (abs(eps) > tol)){
     iter<-iter+1
@@ -74,7 +83,7 @@ mainTMLE <- function(fit, t, Anode, intervention, B=100, N=100, MC=100, maxIter=
     
     d<-cbind.data.frame(observed,pred,H)
     
-    eps<-coef(glm(X ~ -1 + offset(qlogis(off)) + H, data=d, family='binomial'))
+    eps<-coef(glm(X ~ -1 + offset(qlogis(off)) + H, data=d, family='quasibinomial'))
     eps[is.na(eps)] <- 0
     
     #Update:
@@ -88,6 +97,8 @@ mainTMLE <- function(fit, t, Anode, intervention, B=100, N=100, MC=100, maxIter=
     row.names(pred_star)<-name
     
     data <- data.frame(data=pred_star[order(row.names(pred_star)), ])
+    row.names(data)<-row.names(fit$data)[(step+1):nrow(fit$data)]
+    data<-rbind.data.frame(randDat,data)
     
     #Generate a new fit, using updated data:
     fit<-initEst(data,freqW=fit$freqW,freqA=fit$freqA,freqY=fit$freqY)
@@ -98,13 +109,23 @@ mainTMLE <- function(fit, t, Anode, intervention, B=100, N=100, MC=100, maxIter=
   }
 
   #Update EIC:
-  IC<-getEIC(clevCov, pred_star_fin, n)
-  
-  #Get final estimate at time t:
-  
+  IC<-clevCov$Dbar
 
-
-  return(list(psi=psi, var.psi=var(IC)/n))
+  #Finite sample variance of the estimator.
+  var_tmle<-var(IC, na.rm=TRUE)/length(IC)
+  
+  #Standard error
+  se_tmle<-sqrt(var_tmle)
+  
+  #Get final estimate at time t, for a parameter that does not average across batches.
+  #TO DO: implement the J-type parameter. Better for actually stationary data! 
+  psi<-data[(step*(t+1)),]
+  
+  #Add CI for estimate
+  ci_low<-psi-(stats::qnorm(1-(alpha/2)))*se_tmle
+  ci_high<-psi+(stats::qnorm(1-(alpha/2)))*se_tmle
+  
+  return(list(psi=psi, var.psi=var_tmle, CI=list(CI_lower=ci_low,CI_upper=ci_high), IC=IC))
     
   }
   

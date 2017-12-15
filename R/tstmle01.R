@@ -10,7 +10,8 @@
 #' @param freqY A numeric specifying the Markov order for Y nodes. 
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
+#' @param intervention1 Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
+#' @param intervention2 Specify g^* to compate to. Right now supports only 1/0 type interventions.
 #' @param B How many samples to draw from P, as part of the h-density estimation.
 #' @param N How many sample to draw from P^*, as part of the h-density estimation. 
 #' @param MC How many Monte Carlo samples should be generated.
@@ -29,7 +30,7 @@
 #' @export
 #'
 
-tstmle01 <- function(data,freqY,freqA,freqW,t,Anode,intervention,MC=100,B=100,N=100,
+tstmle01 <- function(data,freqY,freqA,freqW,t,Anode,intervention1,intervention2=NULL,MC=100,B=100,N=100,
                    maxIter=50,tol=10^-5,alpha=0.05) {
  
   #TO DO: add some checks for data, make sure it is in right order, format, etc.
@@ -37,12 +38,25 @@ tstmle01 <- function(data,freqY,freqA,freqW,t,Anode,intervention,MC=100,B=100,N=
   
   fit<-initEst(data,freqW=freqW,freqA=freqA,freqY=freqY)
 
-  est<-mainTMLE(fit,t=t,Anode=Anode,intervention=intervention,
+  est1<-mainTMLE(fit,t=t,Anode=Anode,intervention=intervention1,
                 B=B,N=N,MC=MC,maxIter=maxIter,tol=tol)
   
-  #TO DO: add inference 
+  est2<-mainTMLE(fit,t=t,Anode=Anode,intervention=intervention2,
+                 B=B,N=N,MC=MC,maxIter=maxIter,tol=tol)
   
+  diffIC<-est1$IC-est2$IC
+  diffEst<-est1$psi-est2$psi
   
-  return(list(psi=psi, var.psi=var(IC)/n), CI=list(CI_lower=CI_lower,CI_upper=CI_upper))
+  #Finite sample variance of the estimator.
+  var_tmle<-var(diffIC, na.rm=TRUE)/length(diffIC)
+  
+  #Standard error
+  se_tmle<-sqrt(var_tmle)
+  
+  #Add CI for the difference
+  ci_low<-diffEst-(stats::qnorm(1-(alpha/2)))*se_tmle
+  ci_high<-diffEst+(stats::qnorm(1-(alpha/2)))*se_tmle
+  
+  return(list(psi=diffEst, var.psi=var_tmle, CI=list(CI_lower=ci_low,CI_upper=ci_high), IC=diffIC))
  
 }

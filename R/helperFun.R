@@ -8,6 +8,7 @@ getPred<-function(fit, t){
   
   data<-fit$data
   data_lag<-fit$lag_data
+  data_lag<-data_lag[,-1]
   
   step<-length(grep('_0', row.names(data), value=TRUE))
   
@@ -16,7 +17,7 @@ getPred<-function(fit, t){
   A<-data[((t*step)+2),1]
   Y<-data[((t*step)+3),1]
   
-  #Get predicted values
+  #Get predicted probabilities:
   W_pred<-predict(fit$W, data_lag[(t*step)-2,], type="response")
   A_pred<-predict(fit$A, data_lag[(t*step)-1,], type="response")
   Y_pred<-predict(fit$A, data_lag[(t*step),], type="response")
