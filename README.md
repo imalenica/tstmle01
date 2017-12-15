@@ -46,7 +46,7 @@ To illustrate how to ascertain the effect of an intervention on a single binary 
 load(data)
 
 #Estimate of the expected value of the outcome at time 5, under intervention on Anode 3:
-res<-tstmle01(data,freqY=3,freqA=3,freqW=3,t=5,Anode=3,intervention=1)
+res<-tstmle01(data,freqY=3,freqA=3,freqW=3,t=5,Anode=3,intervention1=1)
 res$psi
 ```
 
