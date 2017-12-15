@@ -4,9 +4,10 @@ Title: Targeted Maximum Likelihood Estimation of Causal Effects of Interventions
 Version: 0.0.1
 Authors@R: c(
     person("Ivana", "Malenica", email = "imalenica@berkeley.edu",
-           role = c("aut", "cre", "cph"), comment = c(ORCID = "0000-0002-7404-8088")),
+           role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-7404-8088")),
     person("Mark", "van der Laan", email = "laan@berkeley.edu",
-           role = "aut"),       
+           role = "aut"),
     person("Jonathan", "Levy", email = "jlstiles@berkeley.edu",
            role = "ctb"),
     person("Chris", "Kennedy", email = "ck37@berkeley.edu",
@@ -14,7 +15,8 @@ Authors@R: c(
     person("Nima", "Hejazi", email = "nhejazi@berkeley.edu",
            role = "ctb", comment = c(ORCID = "0000-0002-7127-2789"))
   )
-Description: Targeted learning for a Single Binary Time Series.
+Description: An implementation of a Targeted Maximum Likelihood Estimator (TMLE)
+    for the effect of an intervention on a single binary time series.
 Depends: R (>= 3.2.0)
 Imports:
     stats,
@@ -24,9 +26,6 @@ Suggests:
     testthat,
     knitr,
     rmarkdown
-Remotes:
-    github::osofr/condensier,
-    github::jeremyrcoyle/sl3
 License: MIT + file LICENSE
 URL: https://github.com/podTockom/tstmle01
 BugReports: https://github.com/podTockom/tstmle01/issues
