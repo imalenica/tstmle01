@@ -24,6 +24,7 @@
 #' \item{psi}{Estimate of the target parameter.}
 #' \item{var.psi}{Variance, based on the influence function.}
 #' \item{CI}{Confidence intervals.}}
+#' \item{IC}{Influence curve.}
 #'            
 #' @importFrom prodlim row.match
 #'
@@ -56,6 +57,8 @@ tstmle01 <- function(data,freqY,freqA,freqW,t,Anode,intervention1,intervention2=
   #Add CI for the difference
   ci_low<-diffEst-(stats::qnorm(1-(alpha/2)))*se_tmle
   ci_high<-diffEst+(stats::qnorm(1-(alpha/2)))*se_tmle
+  
+  p <-2*stats::pnorm(abs(diffEst/se_tmle), lower.tail=F)
   
   return(list(psi=diffEst, var.psi=var_tmle, CI=list(CI_lower=ci_low,CI_upper=ci_high), IC=diffIC))
  

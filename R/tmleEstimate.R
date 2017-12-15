@@ -17,7 +17,7 @@
 #' \describe{
 #' \item{psi}{Estimate of the target parameter.}
 #' \item{var.psi}{Variance, based on the influence function.}}
-#'            
+#' \item{IC}{Influence curve.}            
 #' 
 #'
 #' @export
