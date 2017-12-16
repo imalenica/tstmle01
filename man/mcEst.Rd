@@ -20,8 +20,7 @@ earliest time point is 1. For the clever covariate, this is also our s.}
 
 \item{Anode}{Intervention node.}
 
-\item{intervention}{Specify %g^*, of %P(A \mid \text{past}). Right now, this
-supports only 1/0 type interventions.}
+\item{intervention}{Specify %g^*, of %P(A \mid \text{past}).}
 
 \item{lag}{This is an user impossed dependency lag necessary for the
 calculation of the clever covariate in the targeting step. It refers to
@@ -48,9 +47,8 @@ An object of class \code{tstmle}.
 \item{intervention}{Intervention specified.}
 \item{MC}{How many Monte Carlo samples should be generated.}
 \item{Anode}{Intervention node as a function of O_i.}
-\item{s}{Mean of the intervened outcome given s=1 or s=0 (used for the clever covariate calculation).}
-\item{s_full}{Intervened outcomes given s=1 or s=0.}
 \item{MCdata}{If \code{returnMC} is \code{TRUE}, returns a \code{data.frame} with MC time-series.}
+\item{set}{Returns what the s node was set to.}
 }
 }
 \description{
