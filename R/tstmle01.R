@@ -51,6 +51,13 @@ tstmle01 <- function(data, freqY, freqA, freqW, t, Anode, intervention1,
                    B = B, N = N, MC = MC, maxIter = maxIter, tol = tol
                    )
 
+  est <- foreach(intervention=c(intervention1,intervention2)) %dopar% {
+                 mainTMLE(fit, t = t, Anode = Anode, intervention = intervention,
+                          B = B, N = N, MC = MC, maxIter = maxIter, tol = tol
+                          )
+                }
+  
+  
   #TO DO: Add other parameters as well, not just difference (ex: ratio)
   diffIC <- est1$IC - est2$IC
   diffEst <- est1$psi - est2$psi

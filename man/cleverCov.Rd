@@ -22,7 +22,7 @@ cleverCov(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 100)
 \item{MC}{How many Monte Carlo samples should be generated.}
 }
 \value{
-An object of class \code{tstmle}.
+An object of class \code{tstmle01}.
 \describe{
 \item{Hy}{Clever covariate for Y component of the likelihood.}
 \item{Ha}{Clever covariate for A component of the likelihood.}

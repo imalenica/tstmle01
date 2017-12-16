@@ -43,6 +43,7 @@ getPred <- function(fit, t) {
 #' @param pred_star Updated predictions from \code{mainTMLE}.
 #' @param n Number of samples (time-points).
 #
+
 getEIC <- function(clevCov, pred_star, n) {
 
   # Get all the clever covariates:

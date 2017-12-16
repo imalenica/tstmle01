@@ -5,7 +5,7 @@
 \title{Main TMLE Calculations}
 \usage{
 mainTMLE(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
-  N = 100, MC = 100, maxIter = 50, tol = 10^-5)
+  N = 100, MC = 100, maxIter = 50, tol = 10^-3)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -29,7 +29,7 @@ mainTMLE(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 \item{tol}{Lower bound for epsilon.}
 }
 \value{
-An object of class \code{tstmle}.
+An object of class \code{tstmle01}.
 \describe{
 \item{psi}{Estimate of the target parameter.}
 \item{var.psi}{Variance, based on the influence function.}}

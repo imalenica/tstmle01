@@ -9,7 +9,7 @@
 #' @param freqA A numeric specifying the Markov order for A nodes.
 #' @param freqY A numeric specifying the Markov order for Y nodes.
 #'
-#' @return An object of class \code{tstmle}.
+#' @return An object of class \code{tstmle01}.
 #' \describe{
 #' \item{fitW}{Fit object for W part of the likelihood.}
 #' \item{fitA}{Fit object for A part of the likelihood.}

@@ -23,7 +23,7 @@
 #'  clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.
 #' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
 #'
-#' @return An object of class \code{tstmle}.
+#' @return An object of class \code{tstmle01}.
 #' \describe{
 #' \item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
 #' \item{outcome}{Outcome at time t for each MC interation.}
@@ -36,7 +36,8 @@
 #'
 #' @importFrom stats complete.cases rbinom plogis predict
 #' @importFrom Hmisc Lag
-#' @importFrom doParallel detectCores, makeCluster
+#' @importFrom parallel makeCluster detectCores stopCluster
+#' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach
 #'
 #' @export
@@ -92,19 +93,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     data <- fit$data
   }
   
+  #Save the time 0 time points
+  initData<-data.frame(data=data[grep("_0", row.names(data), value = TRUE),])
+  row.names(initData)<-row.names(data)[1:step]
+  
   # Prepare to return all MCs (up to time t (outcome) generated draws)
   if (returnMC == TRUE & returnMC_full == TRUE) {
     warning("Can't return both a full time-series and a shorter time-series. Returning full time-series.")
-  }
-  
-  if (returnMC == TRUE) {
-    retMC <- matrix(nrow = (t * step + step), ncol = MC)
-    row.names(retMC) <- row.names(data)[1:((t + 1) * step)]
-  }
-  
-  if (returnMC_full == TRUE) {
-    retMC <- matrix(nrow = nrow(data), ncol = MC)
-    row.names(retMC) <- row.names(data)
   }
   
   # Impose artifical order (C(i)) for the clever covariate calculation.
@@ -174,7 +169,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       estNames <- row.names(data_lag)
     }
     
-    # Now that we have all future lags, shorten the time-series.
+    # Now that we have all future lags, shorten the time-series. 
+    # Unless we are returning the full MC
     if (returnMC_full == FALSE & n > t) {
       data_lag <- data_lag[1:(t * step), ]
       estNames <- row.names(data_lag)[1:(t * step)]
@@ -189,16 +185,14 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   }
   
   # TO DO: Later on will need to include more Ws
-  # TO DO: This should be parallelized
-  outcome <- matrix(nrow = MC, ncol = 1)
-  
+
   # i always dependent on W iterations. Make everything offset of W
   #NOTE: last newY is at for data_lag shortened to tau just Y(\tau).
   mainMC<-function(data_lag){
     
+    iter <- 1
+    
     for (i in seq(start, nrow(data_lag), step)) {
-      
-      iter <- 1
       
       # Possibly need to skip the update of W and A at the first iteration,
       # depending on from which node we start. Hence the need for iter and ommitting some nodes.
@@ -319,39 +313,50 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       iter <- iter + 1
     }
     
-    return(newY)
+    if(returnMC == TRUE || returnMC_full == TRUE){
+      data_lag_MC <- data.frame(data=data_lag[-1, 1])
+      row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-1)]
+      
+      #Add initial 3
+      data_lag_MC<-rbind.data.frame(initData,data_lag_MC)
+      
+      return(list(newY=newY,dataMC=data_lag_MC))
+    }else {
+      return(list(newY=newY))
+    }
     
   }
   
   #Set up to run in parallel
-  no_cores <- detectCores() - 1
-  myCluster<-makeCluster(no_cores)
-  registerDoParallel(myCluster)
+  no_cores <- parallel::detectCores() - 1
+  myCluster <- parallel::makeCluster(no_cores)
+  doParallel::registerDoParallel(myCluster)
   
-  #Tracks Y(\tau)
-  outcome<-foreach(1:MC, .combine = rbind) %dopar% mainMC(data_lag=data_lag)
-  on.exit(stopCluster(myCluster))
-  
-  if (returnMC == TRUE || returnMC_full == TRUE) {
+  #Tracks Y(\tau) and MC data
+  outcome_all<-foreach::foreach(1:MC, .combine = c) %dopar% mainMC(data_lag=data_lag)
+  base::on.exit(parallel::stopCluster(myCluster))
+
+  if(returnMC == TRUE || returnMC_full == TRUE){
     
-    data_lag <- data_lag[-1, 1]
+    a <- 1:(2*MC)
     
-    # Collect changed part of the series (from start until the end)
-    if (node == "W") {
-      retMC[((start + step):nrow(retMC)), B] <- data_lag[(start:length(data_lag))]
-      retMC[(1:(start + step - 1)), B] <- data[(1:(start + step - 1)), 1]
-    } else if (node == "A") {
-      retMC[((start + step + 1):nrow(retMC)), B] <- data_lag[((start + 1):length(data_lag))]
-      retMC[(1:(start + step)), B] <- data[(1:(start + step)), 1]
-    } else if (node == "Y") {
-      retMC[((start + step + 2):nrow(retMC)), B] <- data_lag[((start + 2):length(data_lag))]
-      retMC[(1:(start + step + 1)), B] <- data[(1:(start + step + 1)), 1]
-    }
+    #Save Y(\tau)
+    outcome<-unlist(lapply(a[seq(1, length(a), 2)], function(x) outcome_all[x]$newY))
+    
+    #Save MC data
+    dataMC<-lapply(a[seq(2, length(a), 2)], function(x) outcome_all[x]$dataMC)
+    dataMC <- data.frame(matrix(unlist(dataMC), nrow=(step*(n+1)), byrow=F))
+    names(dataMC)<-paste0("MC",1:MC)
+    row.names(dataMC)<-row.names(data)
+    
+  }else{
+    #Save Y(\tau)
+    outcome<-unlist(lapply(1:MC, function(x) outcome_all[x]$newY))
   }
   
   if (returnMC == TRUE || returnMC_full == TRUE) {
     return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,
-                MC = MC, t = t, Anode = Anode, set=set, MCdata = retMC))
+                MC = MC, t = t, Anode = Anode, set=set, MCdata = dataMC))
   
   }else {
     return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,

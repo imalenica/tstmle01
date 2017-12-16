@@ -93,7 +93,7 @@ hEst <- function(fit, i, B, t) {
 #' @param Anode Intervention node.
 #' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
 #'
-#' @return An object of class \code{tstmle}.
+#' @return An object of class \code{tstmle01}.
 #' \describe{
 #' \item{h_cy_star}{Empirical estimate of h_cy under the intervention g^*.}
 #' \item{h_ca_star}{Empirical estimate of h_ca under the intervention g^*.}

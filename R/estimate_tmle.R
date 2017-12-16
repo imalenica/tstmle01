@@ -13,7 +13,7 @@
 #' @param tol Lower bound for epsilon.
 #' @param alpha alpha
 #'
-#' @return An object of class \code{tstmle}.
+#' @return An object of class \code{tstmle01}.
 #' \describe{
 #' \item{psi}{Estimate of the target parameter.}
 #' \item{var.psi}{Variance, based on the influence function.}}
@@ -25,7 +25,7 @@
 #
 
 mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
-                     N = 100, MC = 100, maxIter = 50, tol=10 ^ -5) {
+                     N = 100, MC = 100, maxIter = 50, tol=10 ^ -3) {
 
   # Implement with one epsilon:
   iter <- 0

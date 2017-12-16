@@ -40,7 +40,7 @@ clever covariate. Instead of observed data, it used intervened %P^* for further 
 \item{set}{Set the s node to either 1 or 0. Used for the clever covariate calculation.}
 }
 \value{
-An object of class \code{tstmle}.
+An object of class \code{tstmle01}.
 \describe{
 \item{estimate}{Mean of the outcome at time t under specified intervention, or no intervention.}
 \item{outcome}{Outcome at time t for each MC interation.}

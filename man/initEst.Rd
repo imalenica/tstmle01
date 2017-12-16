@@ -16,7 +16,7 @@ initEst(data, freqW = NULL, freqA = NULL, freqY = NULL)
 \item{freqY}{A numeric specifying the Markov order for Y nodes.}
 }
 \value{
-An object of class \code{tstmle}.
+An object of class \code{tstmle01}.
 \describe{
 \item{fitW}{Fit object for W part of the likelihood.}
 \item{fitA}{Fit object for A part of the likelihood.}

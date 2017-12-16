@@ -10,7 +10,7 @@
 #' @param B How many samples to draw from P, as part of the h-density estimation.
 #' @param N How many sample to draw from %P^*, as part of the h-density estimation.
 #'
-#' @return An object of class \code{tstmle}.
+#' @return An object of class \code{tstmle01}.
 #' \describe{
 #' \item{Hy}{Clever covariate for Y component of the likelihood.}
 #' \item{Ha}{Clever covariate for A component of the likelihood.}
@@ -47,13 +47,13 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
   D <- matrix(nrow = n, ncol = 1)
 
   # TO DO: Probably need some kind of an internal seed for these computations.
-  # Generate our P^*, intervening only on Anode.
+  # Generate our P^*, intervening only on Anode, from Anode.
   p_star <- mcEst(fit, start = Anode, node = "A", t = t, Anode = Anode,
                   intervention = intervention, MC = 1, returnMC_full = TRUE)
 
   # Add intervened data to fit:
   fit[["p_star"]] <- p_star$MCdata
-
+  
   for (i in seq_len(n)) {
     
     Hy_diff <- 0
@@ -136,7 +136,7 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
-          Hy_diff_add <- Hy1$s - Hy0$s
+          Hy_diff_add <- Hy1$estimate - Hy0$estimate
 
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,

@@ -16,6 +16,6 @@ ts_samp_data
 \description{
 A dataset with a simple data structure O = (W, A, Y), where all covariates in
 the data set are binary (0/1). This is a simple dataset designed specifically
-to illustrate the TML estimation procedure.
+to illustrate the TMLE estimation procedure.
 }
 \keyword{datasets}
