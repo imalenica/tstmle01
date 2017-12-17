@@ -54,8 +54,6 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
   # Generate our P^*, intervening only on Anode, from Anode.
   p_star <- mcEst(fit, start = Anode, node = "A", t = t, Anode = Anode,
                   intervention = intervention, MC = 1, returnMC_full = TRUE)
-
-  # Add intervened data to fit:
   fit[["p_star"]] <- p_star$MCdata
   
   # Sample N observations from P^*:
@@ -65,8 +63,7 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
   fit[["h_star"]] <- p_star_mc$MCdata
   
   # Sample B observations from P:
-  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B,
-                returnMC_full = TRUE)
+  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B, returnMC_full = TRUE)
   fit[["h"]] <- p_mc$MCdata
   
   for (i in seq_len(n)) {
@@ -218,7 +215,7 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
       Hw_diff <- Hw_diff + Hw_diff_add
 
       # Get h^*
-      h_star_est <- hstarEst(fit, s, i, B, t, Anode, intervention)
+      h_star_est <- hstarEst(fit, s, i, B, t)
 
       # Sum over all s:
       hy_star <- hy_star + h_star_est$h_cy_star

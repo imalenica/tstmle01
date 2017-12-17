@@ -87,8 +87,6 @@ hEst <- function(fit, i, B, t) {
 #' @param i Where we are in the i loop (part of the clever covariate calculation).
 #' @param B Number of observations to sample from P and P^*.
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
-#' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past).
 #'
 #' @return An object of class \code{tstmle01}.
 #' \describe{
@@ -101,7 +99,7 @@ hEst <- function(fit, i, B, t) {
 #' @export
 #
 
-hstarEst <- function(fit, s, i, B, t, Anode, intervention = NULL) {
+hstarEst <- function(fit, s, i, B, t) {
 
   p_star<-fit$h_star
   
@@ -123,7 +121,7 @@ hstarEst <- function(fit, s, i, B, t, Anode, intervention = NULL) {
   Cy_match <- data.frame(matrix(nrow = B, ncol = 1))
   Ca_match <- data.frame(matrix(nrow = B, ncol = 1))
   Cw_match <- data.frame(matrix(nrow = B, ncol = 1))
-
+  
   for (b in 1:B) {
     
     res <- lapply(1:fit$freqW, function(x) {

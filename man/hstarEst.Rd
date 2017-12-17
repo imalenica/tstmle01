@@ -4,7 +4,7 @@
 \alias{hstarEst}
 \title{h*-density estimation}
 \usage{
-hstarEst(fit, s, i, B, t, Anode, intervention = NULL)
+hstarEst(fit, s, i, B, t)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -16,10 +16,6 @@ hstarEst(fit, s, i, B, t, Anode, intervention = NULL)
 \item{B}{Number of observations to sample from P and P^*.}
 
 \item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
-
-\item{Anode}{Intervention node.}
-
-\item{intervention}{Specify g^*, of P(A|past).}
 }
 \value{
 An object of class \code{tstmle01}.
