@@ -91,7 +91,7 @@ hEst <- function(fit, i, B, t) {
 #' @param B Number of observations to sample from P and P^*.
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.
+#' @param intervention Specify g^*, of P(A|past).
 #'
 #' @return An object of class \code{tstmle01}.
 #' \describe{
@@ -104,11 +104,11 @@ hEst <- function(fit, i, B, t) {
 #' @export
 #
 
-hstarEst <- function(fit, s, i, B, t, Anode, intervention = 1) {
+hstarEst <- function(fit, s, i, B, t, Anode, intervention = NULL) {
 
   # Sample B observations from P^*:
   # Need to sample the full time-series because of the i-th comparison.
-  p_star_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = Anode,
+  p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
                      intervention = intervention, MC = B, returnMC_full = TRUE)
   p_star <- p_star_mc$MCdata
 
@@ -141,6 +141,7 @@ hstarEst <- function(fit, s, i, B, t, Anode, intervention = 1) {
                       stringsAsFactors = FALSE)
     data_est_full <- cbind.data.frame(data = p_star[, b], res)
     data_est_full <- data_est_full[, -1]
+    row.names(data_est_full)<-row.names(p_star)
 
     # Which C_y(s)/C_a(s)/C_w(s) do we care about:
     Cy[b, ] <- data_est_full[(step + s * step), ]

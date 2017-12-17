@@ -81,21 +81,20 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     #Note: node is the first node that is MCed. So we go back to set the node before.
     if (node == "W") {
       #Set Y:
+      #(note, start=s+1 here)
       data[(start * step), ] <- set
     } else if (node == "Y") {
       #Set A:
-      data[((start-1) * step) + 2, ] <- set
+      #(note, start=s here)
+      data[(start * step) + 2, ] <- set
     } else if (node == "A") {
-      #Set WL
-      data[((start-1) * step) + 1, ] <- set
+      #Set W:
+      #(note, start=s here)
+      data[(start * step) + 1, ] <- set
     }
   } else {
     data <- fit$data
   }
-  
-  #Save the time 0 time points
-  initData<-data.frame(data=data[grep("_0", row.names(data), value = TRUE),])
-  row.names(initData)<-row.names(data)[1:step]
   
   # Prepare to return all MCs (up to time t (outcome) generated draws)
   if (returnMC == TRUE & returnMC_full == TRUE) {
@@ -132,7 +131,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       data_lag <- data_lag[1:((t + 1) * step), ]
       estNames <- row.names(data_lag)[1:((t + 1) * step)]
     }
-    
+
     # get actual index of Anode
     Anode <- Anode * step + 2
     
@@ -154,14 +153,14 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     
     data_est_full <- cbind.data.frame(data = data, res)
     
+    n <- (nrow(data_est_full)-step) / step
+    
     # Drop time 0 for estimation
     # Notice: drop step*(lag+1) each time
     cc <- stats::complete.cases(data_est_full)
     data_est <- data_est_full[cc, ]
     data_lag <- data.frame(data_est[-1, ])
     data_lag <- data.frame(data_lag[, -1])
-    
-    n <- nrow(data_lag) / step
     
     # Option for returnMC
     if (clevCov == FALSE & returnMC_full == FALSE) {
@@ -172,8 +171,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     # Now that we have all future lags, shorten the time-series. 
     # Unless we are returning the full MC
     if (returnMC_full == FALSE & n > t) {
-      data_lag <- data_lag[1:(t * step), ]
-      estNames <- row.names(data_lag)[1:(t * step)]
+      data_lag <- data_lag[1:((t * step)-(lag*step)), ]
+      estNames <- row.names(data_lag)[1:((t * step)-(lag*step))]
     }
     
     # get actual index of Anode
@@ -205,71 +204,106 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         # Start at A.
         if (node == "A") {
           if (is.null(intervention)) {
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
             # Update for Y
-            data_lag[(i + 2), 1] <- newA
+            newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+            
+            if((i + 2 + (lag*step))>0){
+              
+              data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }
           } else if (!is.null(intervention)) {
             if ((i + 1) == Anode) {
+              # Update for Y
               newA <- stats::rbinom(1, 1, intervention)
-              # Update for Y
-              data_lag[(i + 2), 1] <- newA
+              
+              if((i + 2 + (lag*step))>0){
+                
+                data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }
             } else {
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
               # Update for Y
-              data_lag[(i + 2), 1] <- newA
+              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+              
+              if((i + 2 + (lag*step))>0){
+                
+                data_lag[(i + 2 + (lag*step)), 1] <- newA 
+              }
             }
           }
           
+          # Update for next W
           newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
           
-          # Update for next W
-          data_lag[(i + 3), 2] <- newA
-          data_lag[(i + 3), 1] <- newY
-          
-          iter <- iter + 1
+          if((i + 3 + (lag*step))<0){
+            
+            data_lag[(i + 3 + (lag*step)), 2] <- newA
+            data_lag[(i + 3 + (lag*step)), 1] <- newY
+          }
           
           #Start at Y. 
         }else if (node == "Y") {
           
           # Now we skip both W and A, start generating MC draws from Y.
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
           # Update for next W
-          data_lag[(i + 3), 1] <- newY
+          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
           
-          iter <- iter + 1
-          
+          if((i + 3 + (lag*step))>0){
+            
+            data_lag[(i + 3 + (lag*step)), 1] <- newY
+          }
+   
           #Start at W.   
         }else if (node == "W") {
           
           # Don't skip anything, start with W.
-          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
           # Update for A
-          data_lag[(i + 1), 1] <- newW
+          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+          
+          if((i + 1 + (lag*step))>0){
+            
+            data_lag[(i + 1 + (lag*step)), 1] <- newW 
+          }
           
           if (is.null(intervention)) {
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
             # Update for Y
-            data_lag[(i + 2), 2] <- newW
-            data_lag[(i + 2), 1] <- newA
+            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            
+            if((i + 2 + (lag*step))>0){
+              
+              data_lag[(i + 2 + (lag*step)), 2] <- newW
+              data_lag[(i + 2 + (lag*step)), 1] <- newA 
+            }
           } else if (!is.null(intervention)) {
             if ((i + 1) == Anode) {
+              # Update for Y
               newA <- rbinom(1, 1, intervention)
-              # Update for Y
-              data_lag[(i + 2), 2] <- newW
-              data_lag[(i + 2), 1] <- newA
+              
+              if((i + 2 + (lag*step))>0){
+                
+                data_lag[(i + 2 + (lag*step)), 2] <- newW
+                data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }
             } else {
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
               # Update for Y
-              data_lag[(i + 2), 2] <- newW
-              data_lag[(i + 2), 1] <- newA
+              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+              
+              if((i + 2 + (lag*step))>0){
+                
+                data_lag[(i + 2 + (lag*step)), 2] <- newW
+                data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }
             }
           }
           
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
           # Update for next W
           # In the last iteration this will be NA... This is ok for now, just one more row.
-          data_lag[(i + 3), 2] <- newA
-          data_lag[(i + 3), 1] <- newY
+          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          
+          if((i + 3 + (lag*step))>0){
+            
+            data_lag[(i + 3 + (lag*step)), 2] <- newA
+            data_lag[(i + 3 + (lag*step)), 1] <- newY 
+          }
           
         }
         
@@ -278,35 +312,55 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         
         # For later iterations, do as always.
         # MC draws start from "start" and W node.
-        newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+        
         # Update for A
-        data_lag[(i + 1), 1] <- newW
-        data_lag[(i + 1), 2] <- newY
+        newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+        
+        if((i + 1 + (lag*step))>0){
+          
+          data_lag[(i + 1 + (lag*step)), 1] <- newW
+          data_lag[(i + 1 + (lag*step)), 2] <- newY 
+        }
         
         if (is.null(intervention)) {
-          newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
           # Update for Y
-          data_lag[(i + 2), 2] <- newW
-          data_lag[(i + 2), 1] <- newA
+          newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+          
+          if((i + 2 + (lag*step))>0){
+            
+            data_lag[(i + 2 + (lag*step)), 2] <- newW
+            data_lag[(i + 2 + (lag*step)), 1] <- newA
+          }
         } else if (!is.null(intervention)) {
           if ((i + 1) == Anode) {
+            # Update for Y
             newA <- stats::rbinom(1, 1, intervention)
-            # Update for Y
-            data_lag[(i + 2), 2] <- newW
-            data_lag[(i + 2), 1] <- newA
+            
+            if((i + 2 + (lag*step))>0){
+              
+              data_lag[(i + 2 + (lag*step)), 2] <- newW
+              data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }
           } else {
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
             # Update for Y
-            data_lag[(i + 2), 2] <- newW
-            data_lag[(i + 2), 1] <- newA
+            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            
+            if((i + 2 + (lag*step))>0){
+              
+              data_lag[(i + 2 + (lag*step)), 2] <- newW
+              data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }
           }
         }
         
-        newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
         # Update for next W
         # In the last iteration this will be NA... This is ok for now, just one more row.
-        data_lag[(i + 3), 2] <- newA
-        data_lag[(i + 3), 1] <- newY
+        newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+        
+        if((i + 3 + (lag*step))>0){
+          data_lag[(i + 3 + (lag*step)), 2] <- newA
+          data_lag[(i + 3 + (lag*step)), 1] <- newY 
+        }
         
       }
       
@@ -314,11 +368,25 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     }
     
     if(returnMC == TRUE || returnMC_full == TRUE){
-      data_lag_MC <- data.frame(data=data_lag[-1, 1])
-      row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-1)]
+      if(lag>=0){
+        data_lag_MC <- data.frame(data=data_lag[(lag*step+2):nrow(data_lag), 1])
+        row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-(lag*step+1))]
+        
+        #data_lag is truncated to go from start. Add what's missing
+        missData<-data.frame(data=data[1:(step+(abs(lag)*step)),])
+        row.names(missData)<-row.names(data)[1:(step+(abs(lag)*step))]
+        data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+      }else if(lag<0){
+        #Goes until the end
+        data_lag_MC<-data.frame(data=data_lag[1:(nrow(data_lag)+(lag*step+1)),1])
+        row.names(data_lag_MC)<-row.names(data_lag)[-(lag*step):nrow(data_lag)]
+        
+        #data_lag is truncated to go from start. Add what's missing
+        missData<-data.frame(data=data[1:-(lag*step+1),])
+        row.names(missData)<-row.names(data)[1:-(lag*step+1)]
+        data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+      }
       
-      #Add initial 3
-      data_lag_MC<-rbind.data.frame(initData,data_lag_MC)
       
       return(list(newY=newY,dataMC=data_lag_MC))
     }else {
@@ -336,7 +404,20 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   outcome_all<-foreach::foreach(1:MC, .combine = c) %dopar% mainMC(data_lag=data_lag)
   base::on.exit(parallel::stopCluster(myCluster))
 
-  if(returnMC == TRUE || returnMC_full == TRUE){
+  if(returnMC == TRUE){
+    
+    a <- 1:(2*MC)
+    
+    #Save Y(\tau)
+    outcome<-unlist(lapply(a[seq(1, length(a), 2)], function(x) outcome_all[x]$newY))
+    
+    #Save MC data
+    dataMC<-lapply(a[seq(2, length(a), 2)], function(x) outcome_all[x]$dataMC)
+    dataMC <- data.frame(matrix(unlist(dataMC), nrow=(step*(t+1)), byrow=F))
+    names(dataMC)<-paste0("MC",1:MC)
+    row.names(dataMC)<-row.names(data)[1:(step*(t+1))]
+    
+  }else if(returnMC_full == TRUE){
     
     a <- 1:(2*MC)
     

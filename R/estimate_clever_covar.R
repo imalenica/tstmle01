@@ -5,7 +5,7 @@
 #' @param fit \code{fit} object obtained by \code{initEst}.
 #' @param t Outcome time point of interest. It must be greater than the intervention node A.
 #' @param Anode Intervention node.
-#' @param intervention Specify %g^*, of %P(A \mid \text{past}). Right now, this supports only 1/0 type interventions.
+#' @param intervention Specify %g^*, of %P(A \mid \text{past}).
 #' @param MC How many Monte Carlo samples should be generated.
 #' @param B How many samples to draw from P, as part of the h-density estimation.
 #' @param N How many sample to draw from %P^*, as part of the h-density estimation.
@@ -23,7 +23,7 @@
 #' @export
 #
 
-cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 100) {
+cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC = 100) {
   
   step <- length(grep("_1$", row.names(fit$data), value = TRUE))
   n <- nrow(fit$data) / step - 1
@@ -77,14 +77,14 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
           
         } else {
           #Y
@@ -92,21 +92,21 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
-          Hy_diff_add <- Hy1$s - Hy0$s
+          Hy_diff_add <- Hy1$estimate - Hy0$estimate
           
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (-1 * (i - s)), MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
         }
         
       } else if (s == i) {
@@ -121,14 +121,14 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
           
         } else {
           #Y
@@ -143,14 +143,14 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = 0, MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
         }
         
       } else if (s > i) {
@@ -165,14 +165,14 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
           
         } else {
           #Y
@@ -180,21 +180,21 @@ cleverCov <- function(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 10
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hy0 <- mcEst(fit, start = s + 1, node = "W", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
-          Hy_diff_add <- Hy1$s - Hy0$s
+          Hy_diff_add <- Hy1$estimate - Hy0$estimate
 
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Ha0 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
-          Ha_diff_add <- Ha1$s - Ha0$s
+          Ha_diff_add <- Ha1$estimate - Ha0$estimate
 
           #W
           Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 1)
           Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                        lag = (s - i), MC = MC, clevCov = TRUE, set = 0)
-          Hw_diff_add <- Hw1$s - Hw0$s
+          Hw_diff_add <- Hw1$estimate - Hw0$estimate
         }
       }
 

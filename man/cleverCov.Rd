@@ -4,7 +4,8 @@
 \alias{cleverCov}
 \title{Clever Covariate calculation}
 \usage{
-cleverCov(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 100)
+cleverCov(fit, t, Anode, intervention = NULL, B = 100, N = 100,
+  MC = 100)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -13,7 +14,7 @@ cleverCov(fit, t, Anode, intervention = 1, B = 100, N = 100, MC = 100)
 
 \item{Anode}{Intervention node.}
 
-\item{intervention}{Specify %g^*, of %P(A \mid \text{past}). Right now, this supports only 1/0 type interventions.}
+\item{intervention}{Specify %g^*, of %P(A \mid \text{past}).}
 
 \item{B}{How many samples to draw from P, as part of the h-density estimation.}
 

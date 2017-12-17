@@ -4,7 +4,7 @@
 \alias{hstarEst}
 \title{h*-density estimation}
 \usage{
-hstarEst(fit, s, i, B, t, Anode, intervention = 1)
+hstarEst(fit, s, i, B, t, Anode, intervention = NULL)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -19,7 +19,7 @@ hstarEst(fit, s, i, B, t, Anode, intervention = 1)
 
 \item{Anode}{Intervention node.}
 
-\item{intervention}{Specify g^*, of P(A|past). Right now supports only 1/0 type interventions.}
+\item{intervention}{Specify g^*, of P(A|past).}
 }
 \value{
 An object of class \code{tstmle01}.
