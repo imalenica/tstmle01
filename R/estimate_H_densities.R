@@ -21,10 +21,7 @@
 #
 hEst <- function(fit, i, B, t) {
 
-  # Sample B observations from P:
-  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B,
-                returnMC_full = TRUE)
-  p <- p_mc$MCdata
+  p <- fit[["h"]]
 
   # How many in a batch:
   step <- length(grep("_0", row.names(p), value = TRUE))
@@ -106,12 +103,8 @@ hEst <- function(fit, i, B, t) {
 
 hstarEst <- function(fit, s, i, B, t, Anode, intervention = NULL) {
 
-  # Sample B observations from P^*:
-  # Need to sample the full time-series because of the i-th comparison.
-  p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
-                     intervention = intervention, MC = B, returnMC_full = TRUE)
-  p_star <- p_star_mc$MCdata
-
+  p_star<-fit$h_star
+  
   # How many in a batch:
   step <- length(grep("_0", row.names(p_star), value = TRUE))
 

@@ -26,7 +26,11 @@
 cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC = 100) {
   
   step <- length(grep("_1$", row.names(fit$data), value = TRUE))
-  n <- nrow(fit$data) / step - 1
+  
+  #Note: time-series needs to be of length n+t for the estimation to make sense for later lags. 
+  #Considered time-series might need to be longer that what we need to get it. 
+  #Ex: for size n=100 and t=5, we need a time-series of 105 points. 
+  n <- (nrow(fit$data) / step - 1) - (t-1)
 
   # Generate clever covariates for each of the likelihood components: W, A, Y
   # and efficient influence function (EIF)
@@ -53,6 +57,17 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
 
   # Add intervened data to fit:
   fit[["p_star"]] <- p_star$MCdata
+  
+  # Sample N observations from P^*:
+  # Need to sample the full time-series because of the i-th comparison.
+  p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
+                     intervention = intervention, MC = N, returnMC_full = TRUE)
+  fit[["h_star"]] <- p_star_mc$MCdata
+  
+  # Sample B observations from P:
+  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B,
+                returnMC_full = TRUE)
+  fit[["h"]] <- p_mc$MCdata
   
   for (i in seq_len(n)) {
     

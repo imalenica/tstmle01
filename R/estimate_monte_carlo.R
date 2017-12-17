@@ -131,6 +131,12 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       data_lag <- data_lag[1:((t + 1) * step), ]
       estNames <- row.names(data_lag)[1:((t + 1) * step)]
     }
+    
+    #Check the time-series is long enough for this estimation step:
+    if(is.na(data_lag[nrow(data_lag),2])){
+      stop("The time-series considered is too short for this estimation problem. 
+           Consider having a longer time-series, or an earlier outcome point.")
+    }
 
     # get actual index of Anode
     Anode <- Anode * step + 2
@@ -139,7 +145,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     # (right now, start is set to be the batch, not actual index)
     start <- start * step + 1
     
-  } else if (lag >= 0) {
+    }else if (lag >= 0) {
     
     # This is ok under the assumption orders are the same dimension.
     # Note that "lags" in the clever covariate are defined by the size of the "step".
@@ -210,6 +216,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
             if((i + 2 + (lag*step))>0){
               
               data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }else{
+              #Save the obtained newA in place of new.
+              data_lag[i + 1, 1]<-newA
             }
           } else if (!is.null(intervention)) {
             if ((i + 1) == Anode) {
@@ -219,6 +228,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               if((i + 2 + (lag*step))>0){
                 
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }else{
+                data_lag[i + 1, 1]<-newA
               }
             } else {
               # Update for Y
@@ -227,6 +238,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               if((i + 2 + (lag*step))>0){
                 
                 data_lag[(i + 2 + (lag*step)), 1] <- newA 
+              }else{
+                data_lag[i + 1, 1]<-newA
               }
             }
           }
@@ -234,10 +247,12 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           # Update for next W
           newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
           
-          if((i + 3 + (lag*step))<0){
+          if((i + 3 + (lag*step))>0){
             
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY
+          }else{
+            data_lag[i + 2, 1]<-newY
           }
           
           #Start at Y. 
@@ -248,8 +263,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 1] <- newY
+          }else{
+            data_lag[i + 2, 1]<-newY
           }
    
           #Start at W.   
@@ -260,8 +276,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
           
           if((i + 1 + (lag*step))>0){
-            
             data_lag[(i + 1 + (lag*step)), 1] <- newW 
+          }else{
+            data_lag[i, 1]<-newW
           }
           
           if (is.null(intervention)) {
@@ -272,6 +289,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA 
+            }else{
+              data_lag[i + 1, 1]<-newA
             }
           } else if (!is.null(intervention)) {
             if ((i + 1) == Anode) {
@@ -282,6 +301,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
                 
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }else{
+                data_lag[i + 1, 1]<-newA
               }
             } else {
               # Update for Y
@@ -291,6 +312,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
                 
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
+              }else{
+                data_lag[i + 1, 1]<-newA
               }
             }
           }
@@ -303,6 +326,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
             
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY 
+          }else{
+            data_lag[i + 2, 1]<-newY
           }
           
         }
@@ -317,11 +342,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
         
         if((i + 1 + (lag*step))>0){
-          
           data_lag[(i + 1 + (lag*step)), 1] <- newW
           data_lag[(i + 1 + (lag*step)), 2] <- newY 
+        }else{
+          data_lag[i, 1]<-newW
         }
         
+        #Intervention=NULL
         if (is.null(intervention)) {
           # Update for Y
           newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
@@ -330,17 +357,24 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
             
             data_lag[(i + 2 + (lag*step)), 2] <- newW
             data_lag[(i + 2 + (lag*step)), 1] <- newA
+          }else{
+            data_lag[i + 1, 1]<-newA
           }
         } else if (!is.null(intervention)) {
+          
+          #Intervention at the current node batch
           if ((i + 1) == Anode) {
             # Update for Y
             newA <- stats::rbinom(1, 1, intervention)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }else{
+              data_lag[i + 1, 1]<-newA
             }
+            
+          #There is an intervention but not in this batch  
           } else {
             # Update for Y
             newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
@@ -349,6 +383,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA
+            }else{
+              data_lag[i + 1, 1]<-newA
             }
           }
         }
@@ -360,6 +396,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         if((i + 3 + (lag*step))>0){
           data_lag[(i + 3 + (lag*step)), 2] <- newA
           data_lag[(i + 3 + (lag*step)), 1] <- newY 
+        }else{
+          data_lag[i + 2, 1]<-newY
         }
         
       }
@@ -368,6 +406,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     }
     
     if(returnMC == TRUE || returnMC_full == TRUE){
+      
       if(lag>=0){
         data_lag_MC <- data.frame(data=data_lag[(lag*step+2):nrow(data_lag), 1])
         row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-(lag*step+1))]
@@ -376,19 +415,29 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         missData<-data.frame(data=data[1:(step+(abs(lag)*step)),])
         row.names(missData)<-row.names(data)[1:(step+(abs(lag)*step))]
         data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
-      }else if(lag<0){
-        #Goes until the end
-        data_lag_MC<-data.frame(data=data_lag[1:(nrow(data_lag)+(lag*step+1)),1])
-        row.names(data_lag_MC)<-row.names(data_lag)[-(lag*step):nrow(data_lag)]
         
-        #data_lag is truncated to go from start. Add what's missing
-        missData<-data.frame(data=data[1:-(lag*step+1),])
-        row.names(missData)<-row.names(data)[1:-(lag*step+1)]
-        data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+      }else if(lag<0){
+        
+        if((nrow(data_lag)+(lag*step+1))>0){
+          #Goes until the end
+          data_lag_MC<-data.frame(data=data_lag[1:(nrow(data_lag)+(lag*step+1)),1])
+          row.names(data_lag_MC)<-row.names(data_lag)[-(lag*step):nrow(data_lag)]
+          
+          #data_lag is truncated to go from start. Add what's missing
+          missData<-data.frame(data=data[1:-(lag*step+1),])
+          row.names(missData)<-row.names(data)[1:-(lag*step+1)]
+          data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+        }else{
+          #No updating occured: return what was calculated based on the original ts
+          data_lag_MC<-data.frame(data=data_lag[start:nrow(data_lag),1])
+          data_lag_MC<-rbind.data.frame(data.frame(data=data_est_full[1:(start-1),1]),data_lag_MC)
+          row.names(data_lag_MC)<-row.names(data_lag)
+        }
+        
       }
       
-      
       return(list(newY=newY,dataMC=data_lag_MC))
+      
     }else {
       return(list(newY=newY))
     }
