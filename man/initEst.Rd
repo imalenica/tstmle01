@@ -4,10 +4,12 @@
 \alias{initEst}
 \title{Initial Estimate}
 \usage{
-initEst(data, freqW = NULL, freqA = NULL, freqY = NULL)
+initEst(data, t, freqW = NULL, freqA = NULL, freqY = NULL)
 }
 \arguments{
 \item{data}{data.frame object containg the time series with relevant time ordering.}
+
+\item{t}{Outcome time point of interest. It must be greater than the intervention node A.}
 
 \item{freqW}{A numeric specifying the Markov order for W nodes.}
 
@@ -21,6 +23,9 @@ An object of class \code{tstmle01}.
 \item{fitW}{Fit object for W part of the likelihood.}
 \item{fitA}{Fit object for A part of the likelihood.}
 \item{fitY}{Fit object for Y part of the likelihood.}
+\item{probW}{Probability of success for the W process.} 
+\item{probA}{Probability of success for the A process.}
+\item{probY}{Probability of success for the Y process.}  
 \item{freqW}{Input Markov order for W.}
 \item{freqA}{Input Markov order for A.}
 \item{freqY}{Input Markov order for Y.}

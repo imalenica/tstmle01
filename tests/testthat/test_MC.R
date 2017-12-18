@@ -1,9 +1,9 @@
 # Test Monte Carlo function
-
 library(Hmisc)
 
 set.seed(2)
-data <- read.csv("~/Dropbox/Berkeley_Projects/Software/tstmle/data/data.csv", row.names = 1)
+load("~/Dropbox/Berkeley_Projects/Software/tstmle01/data/ts_samp_data.RData")
+data<-ts_samp_data
 
 fit <- initEst(data, freqW = 2, freqA = 2, freqY = 2)
 

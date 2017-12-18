@@ -67,8 +67,28 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     warning("Still intervention will not have any effect on the specified outcome.")
   }
   
+  #Move this later
+  matchProb <- function(fit,node,covs){
+    
+    if(node=="W"){
+      uniq<-fit$combW
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }else if(node=="A"){
+      uniq<-fit$combA
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }else if(node=="Y"){
+      uniq<-fit$combY
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }
+    
+    return(prob)
+  }
+  
   # How many in a batch:
-  step <- length(grep("_0", row.names(data), value = TRUE))
+  step <- fit$step
   
   # If estMC is used for clever covariate calculation, use P^*.
   if (clevCov == TRUE) {
@@ -137,7 +157,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       stop("The time-series considered is too short for this estimation problem. 
            Consider having a longer time-series, or an earlier outcome point.")
     }
-
+    
     # get actual index of Anode
     Anode <- Anode * step + 2
     
@@ -146,51 +166,51 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     start <- start * step + 1
     
     }else if (lag >= 0) {
-    
-    # This is ok under the assumption orders are the same dimension.
-    # Note that "lags" in the clever covariate are defined by the size of the "step".
-    # TODO: Change this to an option where we can have varying dimensions for W,A,Y.
-    
-    res <- lapply((1 + step * lag):(fit$freqW + step * lag), function(x) {
-      Hmisc::Lag(data[, 1], x)
-    })
-    res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
-                      stringsAsFactors = FALSE)
-    
-    data_est_full <- cbind.data.frame(data = data, res)
-    
-    n <- (nrow(data_est_full)-step) / step
-    
-    # Drop time 0 for estimation
-    # Notice: drop step*(lag+1) each time
-    cc <- stats::complete.cases(data_est_full)
-    data_est <- data_est_full[cc, ]
-    data_lag <- data.frame(data_est[-1, ])
-    data_lag <- data.frame(data_lag[, -1])
-    
-    # Option for returnMC
-    if (clevCov == FALSE & returnMC_full == FALSE) {
-      data_lag <- data_lag[1:((t * step) - (lag * step)), ]
-      estNames <- row.names(data_lag)
+      
+      # This is ok under the assumption orders are the same dimension.
+      # Note that "lags" in the clever covariate are defined by the size of the "step".
+      # TODO: Change this to an option where we can have varying dimensions for W,A,Y.
+      
+      res <- lapply((1 + step * lag):(fit$freqW + step * lag), function(x) {
+        Hmisc::Lag(data[, 1], x)
+      })
+      res <- data.frame(matrix(unlist(res), nrow = length(res[[1]])),
+                        stringsAsFactors = FALSE)
+      
+      data_est_full <- cbind.data.frame(data = data, res)
+      
+      n <- (nrow(data_est_full)-step) / step
+      
+      # Drop time 0 for estimation
+      # Notice: drop step*(lag+1) each time
+      cc <- stats::complete.cases(data_est_full)
+      data_est <- data_est_full[cc, ]
+      data_lag <- data.frame(data_est[-1, ])
+      data_lag <- data.frame(data_lag[, -1])
+      
+      # Option for returnMC
+      if (clevCov == FALSE & returnMC_full == FALSE) {
+        data_lag <- data_lag[1:((t * step) - (lag * step)), ]
+        estNames <- row.names(data_lag)
+      }
+      
+      # Now that we have all future lags, shorten the time-series. 
+      # Unless we are returning the full MC
+      if (returnMC_full == FALSE & n > t) {
+        data_lag <- data_lag[1:((t * step)-(lag*step)), ]
+        estNames <- row.names(data_lag)[1:((t * step)-(lag*step))]
+      }
+      
+      # get actual index of Anode
+      Anode <- Anode * step + 2 - (lag + 1) * step
+      
+      # Get actual index for start, depended on W.
+      # (right now, start is set to be the batch, not actual index)
+      start <- start * step - (lag + 1) * step + 1
     }
-    
-    # Now that we have all future lags, shorten the time-series. 
-    # Unless we are returning the full MC
-    if (returnMC_full == FALSE & n > t) {
-      data_lag <- data_lag[1:((t * step)-(lag*step)), ]
-      estNames <- row.names(data_lag)[1:((t * step)-(lag*step))]
-    }
-    
-    # get actual index of Anode
-    Anode <- Anode * step + 2 - (lag + 1) * step
-    
-    # Get actual index for start, depended on W.
-    # (right now, start is set to be the batch, not actual index)
-    start <- start * step - (lag + 1) * step + 1
-  }
   
   # TO DO: Later on will need to include more Ws
-
+  
   # i always dependent on W iterations. Make everything offset of W
   #NOTE: last newY is at for data_lag shortened to tau just Y(\tau).
   mainMC<-function(data_lag){
@@ -211,10 +231,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         if (node == "A") {
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
               #Save the obtained newA in place of new.
@@ -226,17 +246,16 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- stats::rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
                 data_lag[i + 1, 1]<-newA
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+              prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+              newA <- stats::rbinom(1, 1, prob)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA 
               }else{
                 data_lag[i + 1, 1]<-newA
@@ -245,10 +264,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           }
           
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY
           }else{
@@ -260,20 +279,22 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Now we skip both W and A, start generating MC draws from Y.
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
             data_lag[(i + 3 + (lag*step)), 1] <- newY
           }else{
             data_lag[i + 2, 1]<-newY
           }
-   
+          
           #Start at W.   
         }else if (node == "W") {
           
           # Don't skip anything, start with W.
           # Update for A
-          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+          prob<-matchProb(fit,node="W",data_lag[i, ])
+          newW <- stats::rbinom(1, 1, prob)
           
           if((i + 1 + (lag*step))>0){
             data_lag[(i + 1 + (lag*step)), 1] <- newW 
@@ -283,10 +304,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA 
             }else{
@@ -298,7 +319,6 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -306,10 +326,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+              prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+              newA <- stats::rbinom(1, 1, prob)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -320,10 +340,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Update for next W
           # In the last iteration this will be NA... This is ok for now, just one more row.
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY 
           }else{
@@ -339,7 +359,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         # MC draws start from "start" and W node.
         
         # Update for A
-        newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+        prob<-matchProb(fit,node="W",data_lag[i, ])
+        newW <- stats::rbinom(1, 1, prob)
         
         if((i + 1 + (lag*step))>0){
           data_lag[(i + 1 + (lag*step)), 1] <- newW
@@ -351,10 +372,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         #Intervention=NULL
         if (is.null(intervention)) {
           # Update for Y
-          newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+          prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+          newA <- stats::rbinom(1, 1, prob)
           
           if((i + 2 + (lag*step))>0){
-            
             data_lag[(i + 2 + (lag*step)), 2] <- newW
             data_lag[(i + 2 + (lag*step)), 1] <- newA
           }else{
@@ -374,13 +395,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               data_lag[i + 1, 1]<-newA
             }
             
-          #There is an intervention but not in this batch  
+            #There is an intervention but not in this batch  
           } else {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
@@ -391,7 +412,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         
         # Update for next W
         # In the last iteration this will be NA... This is ok for now, just one more row.
-        newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+        prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+        newY <- stats::rbinom(1, 1, prob)
         
         if((i + 3 + (lag*step))>0){
           data_lag[(i + 3 + (lag*step)), 2] <- newA
@@ -408,14 +430,32 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     if(returnMC == TRUE || returnMC_full == TRUE){
       
       if(lag>=0){
-        data_lag_MC <- data.frame(data=data_lag[(lag*step+2):nrow(data_lag), 1])
-        row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-(lag*step+1))]
-        
-        #data_lag is truncated to go from start. Add what's missing
-        missData<-data.frame(data=data[1:(step+(abs(lag)*step)),])
-        row.names(missData)<-row.names(data)[1:(step+(abs(lag)*step))]
-        data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
-        
+        if(node=="A"){
+          data_lag_MC <- data.frame(data=data_lag[(lag*step+3):nrow(data_lag), 1])
+          row.names(data_lag_MC)<-row.names(data_lag)[2:(nrow(data_lag)-(lag*step+1))]
+          
+          #data_lag is truncated to go from start. Add what's missing
+          missData<-data.frame(data=data[1:(step+1+(abs(lag)*step)),])
+          row.names(missData)<-row.names(data)[1:(step+1+(abs(lag)*step))]
+          data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+        }else if(node=="W"){
+          data_lag_MC <- data.frame(data=data_lag[(lag*step+2):nrow(data_lag), 1])
+          row.names(data_lag_MC)<-row.names(data_lag)[1:(nrow(data_lag)-(lag*step+1))]
+          
+          #data_lag is truncated to go from start. Add what's missing
+          missData<-data.frame(data=data[1:(step+(abs(lag)*step)),])
+          row.names(missData)<-row.names(data)[1:(step+(abs(lag)*step))]
+          data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+        }else if(node=="Y"){
+          data_lag_MC <- data.frame(data=data_lag[(lag*step+4):nrow(data_lag), 1])
+          row.names(data_lag_MC)<-row.names(data_lag)[3:(nrow(data_lag)-(lag*step+1))]
+          
+          #data_lag is truncated to go from start. Add what's missing
+          missData<-data.frame(data=data[1:(step+2+(abs(lag)*step)),])
+          row.names(missData)<-row.names(data)[1:(step+2+(abs(lag)*step))]
+          data_lag_MC<-rbind.data.frame(missData,data_lag_MC)
+        }
+        #TO DO: Investigate for starting node W,A,Y  
       }else if(lag<0){
         
         if((nrow(data_lag)+(lag*step+1))>0){
@@ -452,7 +492,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   #Tracks Y(\tau) and MC data
   outcome_all<-foreach::foreach(1:MC, .combine = c) %dopar% mainMC(data_lag=data_lag)
   base::on.exit(parallel::stopCluster(myCluster))
-
+  
   if(returnMC == TRUE){
     
     a <- 1:(2*MC)
@@ -487,10 +527,11 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   if (returnMC == TRUE || returnMC_full == TRUE) {
     return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,
                 MC = MC, t = t, Anode = Anode, set=set, MCdata = dataMC))
-  
+    
   }else {
     return(list(estimate = mean(outcome), outcome = outcome, intervention = intervention,
                 MC = MC, t = t, Anode = Anode, set=set))
   }
-
+  
 }
+

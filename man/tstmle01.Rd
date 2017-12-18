@@ -6,7 +6,7 @@
 \usage{
 tstmle01(data, freqY, freqA, freqW, t, Anode, intervention1,
   intervention2 = NULL, MC = 100, B = 100, N = 100, maxIter = 50,
-  tol = 10^-5, alpha = 0.05)
+  tol = 10^-5, alpha = 0.05, param = "ate")
 }
 \arguments{
 \item{data}{data.frame object containg the time series with relevant time ordering.}
@@ -36,9 +36,11 @@ tstmle01(data, freqY, freqA, freqW, t, Anode, intervention1,
 \item{tol}{Lower bound for epsilon.}
 
 \item{alpha}{alpha}
+
+\item{param}{Return average treatment effect (ate) or risk ratio (rr).}
 }
 \value{
-An object of class \code{tstmle}.
+An object of class \code{tstmle01}.
 \describe{
 \item{psi}{Estimate of the target parameter.}
 \item{var.psi}{Variance, based on the influence function.}

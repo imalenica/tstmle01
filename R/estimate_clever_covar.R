@@ -25,13 +25,9 @@
 
 cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC = 100) {
   
-  step <- length(grep("_1$", row.names(fit$data), value = TRUE))
+  step <- fit$step
+  n<-fit$n
   
-  #Note: time-series needs to be of length n+t for the estimation to make sense for later lags. 
-  #Considered time-series might need to be longer that what we need to get it. 
-  #Ex: for size n=100 and t=5, we need a time-series of 105 points. 
-  n <- (nrow(fit$data) / step - 1) - (t-1)
-
   # Generate clever covariates for each of the likelihood components: W, A, Y
   # and efficient influence function (EIF)
   Hy_cc <- matrix(nrow = n, ncol = 1)
@@ -50,22 +46,6 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
   # EIC:
   D <- matrix(nrow = n, ncol = 1)
 
-  # TO DO: Probably need some kind of an internal seed for these computations.
-  # Generate our P^*, intervening only on Anode, from Anode.
-  p_star <- mcEst(fit, start = Anode, node = "A", t = t, Anode = Anode,
-                  intervention = intervention, MC = 1, returnMC_full = TRUE)
-  fit[["p_star"]] <- p_star$MCdata
-  
-  # Sample N observations from P^*:
-  # Need to sample the full time-series because of the i-th comparison.
-  p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
-                     intervention = intervention, MC = N, returnMC_full = TRUE)
-  fit[["h_star"]] <- p_star_mc$MCdata
-  
-  # Sample B observations from P:
-  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B, returnMC_full = TRUE)
-  fit[["h"]] <- p_mc$MCdata
-  
   for (i in seq_len(n)) {
     
     Hy_diff <- 0
@@ -81,8 +61,8 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
       if (s < i) {
         # Look into the future to condition on.
         if (s == t) {
-          #Y; If s=t, then just return Y^* for Hy.
-          Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
+          #Y; If s=t, then we have E[Y(t)|Y(s)=1]-E[Y(t)|Y(s)=0]=1
+          Hy_diff_add <- 1
           
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode, 
@@ -124,9 +104,8 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
       } else if (s == i) {
         # Usual setting.
         if (s == t) {
-          
-          #Y; If s=t, then just return Y^* for Hy.
-          Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
+          #Y
+          Hy_diff_add <- 1
 
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,
@@ -168,9 +147,8 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
       } else if (s > i) {
         # Look further in the past since s>i.
         if (s == t) {
-          
-          #Y; If s=t, then just return Y^* for Hy.
-          Hy_diff_add <- p_star$MCdata[length(p_star$MCdata), ]
+          #Y
+          Hy_diff_add <- 1
 
           #A
           Ha1 <- mcEst(fit, start = s, node = "Y", t = t, Anode = Anode,

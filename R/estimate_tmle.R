@@ -27,24 +27,43 @@
 mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
                      N = 100, MC = 100, maxIter = 50, tol=10 ^ -3) {
 
+  # How many in a batch:
+  step <- fit$step
+  
+  # Get n
+  n <- fit$n
+  
+  # TO DO: Probably need some kind of an internal seed for these computations.
+  # Generate our P^*, intervening only on Anode, from Anode.
+  p_star <- mcEst(fit, start = Anode, node = "A", t = t, Anode = Anode,
+                  intervention = intervention, MC = 1, returnMC_full = TRUE)
+  fit[["p_star"]] <- p_star$MCdata
+  
+  # Sample N observations from P^*:
+  # Need to sample the full time-series because of the i-th comparison.
+  p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
+                     intervention = intervention, MC = N, returnMC_full = TRUE)
+  fit[["h_star"]] <- p_star_mc$MCdata
+  
+  # Sample B observations from P:
+  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B, returnMC_full = TRUE)
+  fit[["h"]] <- p_mc$MCdata
+  
+  ###################################
+  # Update
+  ##################################
+  
   # Implement with one epsilon:
   iter <- 0
   eps <- Inf
-
-  # How many in a batch:
-  step <- length(grep("_0", row.names(fit$data), value = TRUE))
-
-  # First 3
-  data <- data.frame(fit$data)
-  randDat <- data.frame(data = data[1:(step), ])
-  row.names(randDat) <- row.names(data)[1:step]
-
+  
   while (iter <= maxIter & (abs(eps) > tol)) {
-    
+ 
     iter <- iter + 1
-
-    # Calculate the clever covariate using the most current fit
-    clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, B = B, N = N, MC = MC)
+    
+    # Calculate the clever covariate using the updated probabilities
+    clevCov <- cleverCov(fit, update=update, t = t, Anode = Anode, intervention = intervention, 
+                         B = B, N = N, MC = MC)
 
     # Get all the clever covariates:
     Hy <- clevCov$Hy
@@ -53,10 +72,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 
     # Get the EIC:
     D <- clevCov$Dbar
-
-    # Get n
-    n <- length(Hy)
-
+    
     Y <- matrix(nrow = n, ncol = 1)
     A <- matrix(nrow = n, ncol = 1)
     W <- matrix(nrow = n, ncol = 1)
@@ -86,28 +102,31 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 
     d <- cbind.data.frame(observed, pred, H)
 
-    eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))
+    eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))[2]
     eps[is.na(eps)] <- 0
 
-    # Update:
+    # Update (probabilities):
     Y_star <- stats::plogis(stats::qlogis(Y_pred) + eps * Hy)
     A_star <- stats::plogis(stats::qlogis(A_pred) + eps * Ha)
     W_star <- stats::plogis(stats::qlogis(W_pred) + eps * Hw)
 
-    # Make it easier to recombine in W,A,Y fashion.
-    pred_star <- data.frame(data = c(Y_star = Y_star, A_star = A_star, W_star = W_star))
-    name <- c(paste0(seq(1:n), "_C"), paste0(seq(1:n), "_B"), paste0(seq(1:n), "_A"))
-    row.names(pred_star) <- name
-
-    data <- data.frame(data = pred_star[order(row.names(pred_star)), ])
-    row.names(data) <- row.names(fit$data)[(step + 1):nrow(fit$data)]
-    data <- rbind.data.frame(randDat, data)
-
-    # Generate a new fit, using updated data:
-    fit <- initEst(data, freqW = fit$freqW, freqA = fit$freqA, freqY = fit$freqY)
-
-    # Generate convinient dataframe for getEIC in case this is the last iteration:
-    pred_star_fin <- cbind.data.frame(Y_star = Y_star, A_star = A_star, W_star = W_star)
+    #Create new unique combinations.
+    
+    #Create a file that has probabilities and lag combinations:
+    W_comb<-cbind.data.frame(fit$estW,W_star)
+    A_comb<-cbind.data.frame(fit$estA,A_star)
+    Y_comb<-cbind.data.frame(fit$estY,Y_star)
+    
+    unique_W_comb<-unique(W_comb)
+    row.names(unique_W_comb)<-NULL
+    unique_A_comb<-unique(A_comb)
+    row.names(unique_A_comb)<-NULL
+    unique_Y_comb<-unique(Y_comb)
+    row.names(unique_Y_comb)<-NULL
+    
+    fit$combW<-unique_W_comb
+    fit$combA<-unique_A_comb
+    fit$combY<-unique_Y_comb
   }
 
   # Update EIC:

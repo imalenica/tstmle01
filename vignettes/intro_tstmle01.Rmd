@@ -1,0 +1,61 @@
+---
+title: "TMLE of Causal Effects of Interventions on a Single Binary Time Series"
+author: "Ivana Malenica"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{TMLE of Causal Effects of Interventions on a Single Binary Time Seriess}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Introduction
+
+The `tstmle01` package provides a method for estimating the causal effect of an intervention on a single binary time-series. 
+
+---
+
+## Installing and loading the package 
+
+In the following sections, we examine the use of `tstmle01` in a variety of simple examples. The package can be installed as follows:
+
+```{r install_pkg}
+if (!("tstmle01" %in% installed.packages())) {
+  devtools::install_github("podTockom/tstmle01")
+}
+```
+
+Once the package is installed, we can load it using the following command:
+
+```{r load_pkg}
+suppressMessages(library(tstmle01))
+```
+
+---
+
+## General methodology
+
+## Input Data
+
+Input data should be a single time-series of arbitrary size. The longer your provided time-series, better the estimation process, just like in the case of $n$ i.i.d. samples (alas, longer computational demand). The input should be $n X 1$ \code{data.frame} with row names indicating which node that particular time point belongs to: $W$, $A$, or $Y$. As mentioned in the previous section, $W$ are the set of covariates, $A$ intervention nodes, and $Y$ outcome. The imposed order must be $W$, $A$, $Y$, so that each time point will be a set of $(W,A,Y)$ for $i = 1, ..., n$. For more details, see the example simulated dataset in the \code{data} directory. 
+
+```{r dataFormat}
+#load(ts_samp_data)
+
+```
+
+
+## Single intervention 
+
+Note that there is a direct relationship between the size of a time-series and the outcome time point one might be interested in. In particular, for the clever covariate to be properly calculated, one must be aware of how long of a time-series we want to use for estimation purposes and where our outcome value is in the time-series. Since we are calculating expected value of $Y(\tau)$ with different lags from $i=1$ to $i=N$, if we want $\tau = 5$, we will need our input to be at least $N+4$. Having that in mind, later outcomes of interest will need longer time-series and will take longer to compute. Therefore, if one is concerned with the effect of an intervention at a specific $\tau$, we advise to excise parts of the time-series with $\tau$ being towards the beginning of the time-series.
+
+## Session Information
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
+
+---
+
+## References
+

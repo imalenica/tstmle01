@@ -1,16 +1,20 @@
 library(Hmisc)
+library(doParallel)
+library(parallel)
+library(foreach)
 
 set.seed(2)
-data <- read.csv("~/Dropbox/Berkeley_Projects/Software/tstmle01/data/data.csv", row.names = 1)
-names <- row.names(data)
+load("~/Dropbox/Berkeley_Projects/Software/tstmle01/data/ts_samp_data.RData")
+data<-ts_samp_data
+names<-row.names(data)
 
-# Make it very easy:
-data <- data.frame(data = data[1:33, ])
-row.names(data) <- names[1:33]
+# Make it very easier:
+data <- data.frame(data = data[1:303, ])
+row.names(data) <- names[1:303]
 
 # Get initial estimates of the process:
-fit <- initEst(data, freqW = 2, freqA = 2, freqY = 2)
+fit <- initEst(data, t=5, freqW = 2, freqA = 2, freqY = 2)
 
 # Get estimates:
-est1 <- mainTMLE(fit, t = 5, Anode = 3, intervention = 1, B = 50, N = 50, MC = 50, maxIter = 20)
-est2 <- mainTMLE(fit, t = 5, Anode = 3, B = 50, N = 50, MC = 50, maxIter = 20)
+est1 <- mainTMLE(fit, t = 5, Anode = 3, intervention = 1, B = 100, N = 100, MC = 100, maxIter = 20)
+est2 <- mainTMLE(fit, t = 5, Anode = 3, B = 100, N = 100, MC = 50, maxIter = 20)

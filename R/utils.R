@@ -77,3 +77,36 @@ rdunif <- function(n, k) {
   return(out)
 }
 
+################################################################################
+
+#' Match probability
+#'
+#' Match probabilities of success based on covariate info
+#'
+#' @param fit \code{fit} object obtained by \code{initEst}.
+#' @param node node for which we want the probability of success based on observed covariates 
+#' @param covs set of covariate observations, in the correct order
+#' 
+#' @importFrom prodlim row.match
+
+matchProb <- function(fit,node,covs){
+  
+  if(node=="W"){
+    uniq<-fit$combW
+    test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+    prob<-uniq[test,ncol(uniq)]
+  }else if(node=="A"){
+    uniq<-fit$combA
+    test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+    prob<-uniq[test,ncol(uniq)]
+  }else if(node=="Y"){
+    uniq<-fit$combY
+    test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+    prob<-uniq[test,ncol(uniq)]
+  }
+  
+  return(prob)
+}
+
+
+
