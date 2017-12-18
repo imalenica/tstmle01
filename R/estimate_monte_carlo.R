@@ -22,6 +22,7 @@
 #' @param clevCov If \code{TRUE}, this MC is used for the calculation of the
 #'  clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.
 #' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
+#' @param full \code{TRUE} if full time-series should be used.
 #'
 #' @return An object of class \code{tstmle01}.
 #' \describe{
@@ -44,7 +45,8 @@
 #
 
 mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag = 0, 
-                  MC=100, returnMC = FALSE, returnMC_full = FALSE, clevCov = FALSE, set = NULL) {
+                  MC=100, returnMC = FALSE, returnMC_full = FALSE, clevCov = FALSE, set = NULL, 
+                  full=FALSE) {
   
   # Checks
   if (start < lag) {
@@ -89,9 +91,9 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   
   # How many in a batch:
   step <- fit$step
-  
+
   # If estMC is used for clever covariate calculation, use P^*.
-  if (clevCov == TRUE) {
+  if (clevCov == TRUE && full==FALSE) {
     
     #Already generated O^* with intervention at Anode:
     data <- fit$p_star
@@ -112,8 +114,14 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       #(note, start=s here)
       data[(start * step) + 1, ] <- set
     }
-  } else {
+  }else if(clevCov == FALSE && full==TRUE){
+    #When simulating p_star and ps for h-densities, use the full data.
+    #Shortening should be only for clever cov calculation
+    data <- fit$data_orig
+  }else if(clevCov == FALSE && full==FALSE){
     data <- fit$data
+  }else if(clevCov == TRUE && full==TRUE){
+    warning("n for clever covariate and full n might not be the same! Make sure this is the right option.")
   }
   
   # Prepare to return all MCs (up to time t (outcome) generated draws)
@@ -138,7 +146,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     data_est_full <- cbind.data.frame(data = data, res)
     data_lag <- data.frame(data_est_full[, -1])
     
-    n <- nrow(data_lag) / step - 1
+    n <- fit$n_true
     
     # Now have to take into account it does not start at 1...
     if (clevCov == FALSE & returnMC_full == FALSE) {
@@ -179,7 +187,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
       
       data_est_full <- cbind.data.frame(data = data, res)
       
-      n <- (nrow(data_est_full)-step) / step
+      n <- fit$n_true
       
       # Drop time 0 for estimation
       # Notice: drop step*(lag+1) each time

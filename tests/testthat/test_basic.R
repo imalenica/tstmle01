@@ -4,7 +4,7 @@ library(parallel)
 library(foreach)
 
 set.seed(2)
-load("~/Dropbox/Berkeley_Projects/Software/tstmle01/data/ts_samp_data.RData")
+data("ts_samp_data")
 data<-ts_samp_data
 names<-row.names(data)
 

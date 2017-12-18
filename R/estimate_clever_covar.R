@@ -25,6 +25,7 @@
 
 cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC = 100) {
   
+  #Use shorter n now: effective size of the time-series is n, not n_true (unless \tau=1)
   step <- fit$step
   n<-fit$n
   

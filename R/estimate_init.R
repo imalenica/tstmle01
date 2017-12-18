@@ -42,6 +42,9 @@ initEst <- function(data, t, freqW = NULL, freqA = NULL, freqY = NULL) {
     #Considered time-series might need to be longer that what we need to get it. 
     #Ex: for size n=100 and t=5, we need a time-series of 105 points. 
     n <- (nrow(data) / step - 1) - (t-1)
+    n_true <- (nrow(data) / step - 1)
+    
+    data_orig<-data
     
     names<-row.names(data)
     data<-data.frame(data=data[1:(step*n),])
@@ -98,9 +101,10 @@ initEst <- function(data, t, freqW = NULL, freqA = NULL, freqY = NULL) {
     fit <- list(W = fitW, A = fitA, Y = fitY, 
                 estW=W_est, estA=A_est, estY=Y_est,
                 combW=unique_W_comb,combA=unique_A_comb,combY=unique_Y_comb,
-                freqW = freqW, freqA = freqA,
-                n=n, step=step,
-                freqY = freqY, data = data, lag_data = data_est)
+                freqW = freqW, freqA = freqA, freqY = freqY,
+                n=n, n_true=n_true, step=step,
+                data = data, data_orig=data_orig, 
+                lag_data = data_est)
   }
   return(fit)
 }

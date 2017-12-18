@@ -9,9 +9,53 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(warn = FALSE)
+```
+
 ## Introduction
 
-The `tstmle01` package provides a method for estimating the causal effect of an intervention on a single binary time-series. 
+The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of causal
+effects based on the observation of a single binary time-series. Current implementation supports iterative TMLE; check back for one-step and online TMLE. For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). 
+
+We emphasize that this general formulation of the statistical estimation problem subsumes many
+other important estimation problems, including but not limited to classical time
+series models, group sequential adaptive designs, and even independent and
+identically distributed data when the summary measure of the past is simply the
+empty set. 
+
+---
+
+## General methodology
+
+We consider the case where we observe a single sequence of dependent random
+variables $O(1), \dots O(n)$, where each $O(t)$ with $t \in \{1, \dots n\}$ takes values in $\mathbf{R}^p$.
+Further, we assume that at each time $t$, we have a chronological order of the
+covariate vector $W(t)$, treatment or exposure $A(t)$ and outcome of interest
+$Y(t)$. We impose the conditional (strong) stationarity assumption on the
+dependent process in question and limit the statistical model to
+conditionally stationary distributions in which widely-separated observations
+are asymptotically independent. We propose a causal model that is compatible
+with this statistical model, and define a family of causal effects in terms of
+stochastic interventions on a subset of the treatment nodes. We note that static interventions are just a subset of the more general stochastic interventions. Our statistical target parameter is defined as the mapping $\Psi_{g^*}^n : \mathcal{M}^n \rightarrow \mathbb{R}$ such that:
+
+$$
+\Psi_{g^*}^n(P^n) = \Psi_{g^*}^n(p_W, p_A, p_Y) = \mathbb{E}_{P_{g^*}^n}
+ Y_{g^*}(\tau_{g^*})
+$$
+
+where $Y_{g^*}(\tau_{g^*})$ is the outcome at time $\tau$ for the intervened data $O_{g^*}^n$. Therefore, we are interested in the expectation of $Y(\tau_{g^*})$ under the intervened distribution $P_{g^*}^n$. 
+
+We can also define a causal effect relative to some baseline level of treatment as
+follows:
+
+$$
+\Psi^n(P^n) = \Psi_{g^*}^n(P^n) - \Psi_{g_0^*}^n(P^n),
+$$
+
+where $g_0^*$ is a baseline treatment regime on the intervention nodes $A(\mathcal{I}) = (A(t) : t \in \mathcal{I})$.
+
+A key feature of the estimation problem is that data is dependent and statistical inference is based on asymptotics in time.This is a unique and powerful result as it estimates the causal effect based on a single time series, and without the need for a control time series.  
 
 ---
 
@@ -33,21 +77,37 @@ suppressMessages(library(tstmle01))
 
 ---
 
-## General methodology
-
 ## Input Data
 
-Input data should be a single time-series of arbitrary size. The longer your provided time-series, better the estimation process, just like in the case of $n$ i.i.d. samples (alas, longer computational demand). The input should be $n X 1$ \code{data.frame} with row names indicating which node that particular time point belongs to: $W$, $A$, or $Y$. As mentioned in the previous section, $W$ are the set of covariates, $A$ intervention nodes, and $Y$ outcome. The imposed order must be $W$, $A$, $Y$, so that each time point will be a set of $(W,A,Y)$ for $i = 1, ..., n$. For more details, see the example simulated dataset in the \code{data} directory. 
+Input data should be a single time-series of arbitrary size. The longer your provided time-series, better the estimation process, just like in the case of $n$ i.i.d. samples (alas, longer computational demand). The input should be $n$ by $1$ \code{data.frame} with row names indicating which node that particular time point belongs to: $W$, $A$, or $Y$. As mentioned in the previous section, $W$ are the set of covariates, $A$ intervention nodes, and $Y$ outcome. The imposed order must be $W$, $A$, $Y$, so that each time point will be a set of $(W,A,Y)$ for $i = 1, ..., n$. For more details, see the example simulated dataset in the data directory. 
 
 ```{r dataFormat}
-#load(ts_samp_data)
-
+data("ts_samp_data")
+head(ts_samp_data)
 ```
-
 
 ## Single intervention 
 
+In this section we examine the effect of a single time-point intervention on a single outcome upstream.
+In particular, we intervene on time point $A(3)$ by setting it equal to $1$ with probability $1$, and examine the expected value of $Y(5)$ under this intervened distribution. This simple example is also a special case of a static intervention on node $A(3)$; we could have specified any probability of success here. In order to save time, for all examples considered here we use a shortened time-series located in the data directory. For estimation purposes, we use 100 Monte Carlo draws to estimate conditional means of $Y_{g^*}(\tau_{g^*})$ and 100 Monte Carlo draws to estimate both $h^*$ and $h$-densities. 
+
 Note that there is a direct relationship between the size of a time-series and the outcome time point one might be interested in. In particular, for the clever covariate to be properly calculated, one must be aware of how long of a time-series we want to use for estimation purposes and where our outcome value is in the time-series. Since we are calculating expected value of $Y(\tau)$ with different lags from $i=1$ to $i=N$, if we want $\tau = 5$, we will need our input to be at least $N+4$. Having that in mind, later outcomes of interest will need longer time-series and will take longer to compute. Therefore, if one is concerned with the effect of an intervention at a specific $\tau$, we advise to excise parts of the time-series with $\tau$ being towards the beginning of the time-series.
+
+```{r singleInter, eval=FALSE}
+#Load package:
+suppressMessages(library(tstmle01))
+
+#Load sample data:
+data("ts_samp_data_ex")
+
+# Get initial estimates of the process:
+fit <- initEst(data, t=5, freqW = 2, freqA = 2, freqY = 2)
+
+#Get targeted estimate of Y(\tau) under intervention P(A(3)=1|C_A(3))=1:
+est1 <- mainTMLE(fit, t = 5, Anode = 3, intervention = 1, B = 100, N = 100, MC = 100)
+
+```
+
 
 ## Session Information
 

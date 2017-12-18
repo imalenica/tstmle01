@@ -33,20 +33,23 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
   # Get n
   n <- fit$n
   
+  #Actual n
+  n_true <- fit$n_true
+  
   # TO DO: Probably need some kind of an internal seed for these computations.
   # Generate our P^*, intervening only on Anode, from Anode.
   p_star <- mcEst(fit, start = Anode, node = "A", t = t, Anode = Anode,
-                  intervention = intervention, MC = 1, returnMC_full = TRUE)
+                  intervention = intervention, MC = 1, returnMC_full = TRUE, full=TRUE)
   fit[["p_star"]] <- p_star$MCdata
   
   # Sample N observations from P^*:
   # Need to sample the full time-series because of the i-th comparison.
   p_star_mc <- mcEst(fit, start = 1, node = "W", t = t, Anode = Anode,
-                     intervention = intervention, MC = N, returnMC_full = TRUE)
+                     intervention = intervention, MC = N, returnMC_full = TRUE, full=TRUE)
   fit[["h_star"]] <- p_star_mc$MCdata
   
   # Sample B observations from P:
-  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B, returnMC_full = TRUE)
+  p_mc <- mcEst(fit, start = 1, node = "A", t = t, Anode = 1, MC = B, returnMC_full = TRUE, full=TRUE)
   fit[["h"]] <- p_mc$MCdata
   
   ###################################
@@ -62,7 +65,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     iter <- iter + 1
     
     # Calculate the clever covariate using the updated probabilities
-    clevCov <- cleverCov(fit, update=update, t = t, Anode = Anode, intervention = intervention, 
+    clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
                          B = B, N = N, MC = MC)
 
     # Get all the clever covariates:
