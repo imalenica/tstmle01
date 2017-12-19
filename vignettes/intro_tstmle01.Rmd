@@ -98,7 +98,8 @@ Note that there is a direct relationship between the size of a time-series and t
 suppressMessages(library(tstmle01))
 
 #Load sample data:
-data("ts_samp_data_ex")
+data(ts_samp_data_ex)
+data<-ts_samp_data_ex
 
 # Get initial estimates of the process:
 fit <- initEst(data, t=5, freqW = 2, freqA = 2, freqY = 2)

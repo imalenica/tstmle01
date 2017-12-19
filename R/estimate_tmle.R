@@ -64,7 +64,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
  
     iter <- iter + 1
     
-    # Calculate the clever covariate
+    # Calculate the clever covariate with the new fit
     clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
                          B = B, N = N, MC = MC)
 
@@ -112,8 +112,8 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     Y_star <- stats::plogis(stats::qlogis(Y_pred) + eps * Hy)
     A_star <- stats::plogis(stats::qlogis(A_pred) + eps * Ha)
     W_star <- stats::plogis(stats::qlogis(W_pred) + eps * Hw)
-
-    #Create new unique combinations.
+    
+    #Create new unique combinations. Not really necessary, mostly checks:
     
     #Create a file that has probabilities and lag combinations:
     W_comb<-cbind.data.frame(fit$estW,W_star)
@@ -130,6 +130,25 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     fit$combW<-unique_W_comb
     fit$combA<-unique_A_comb
     fit$combY<-unique_Y_comb
+    
+    #Update log odds
+    Y_odd <- data.frame(data=stats::qlogis(Y_pred) + eps * Hy)
+    A_odd <- data.frame(data=stats::qlogis(A_pred) + eps * Ha)
+    W_odd <- data.frame(data=stats::qlogis(W_pred) + eps * Hw)
+    
+    row.names(Y_odd)<-paste0("Y_",1:nrow(Y_odd))
+    row.names(A_odd)<-paste0("A_",1:nrow(A_odd))
+    row.names(W_odd)<-paste0("W_",1:nrow(W_odd))
+    
+    #Get new coeffs:
+    W_odd<-cbind.data.frame(W_odd,fit$estW)
+    A_odd<-cbind.data.frame(A_odd,fit$estA)
+    Y_odd<-cbind.data.frame(Y_odd,fit$estY)
+    
+    fit$W <- stats::glm(formula = stats::as.formula("data ~ ."), data = W_odd)
+    fit$A <- stats::glm(formula = stats::as.formula("data ~ ."), data = A_odd)
+    fit$Y <- stats::glm(formula = stats::as.formula("data ~ ."), data = Y_odd)
+    
   }
 
   # Get final estimate at time t, for a parameter that does not average across batches.

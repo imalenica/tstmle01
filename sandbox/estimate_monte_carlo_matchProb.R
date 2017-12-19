@@ -69,6 +69,26 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
     warning("Still intervention will not have any effect on the specified outcome.")
   }
   
+  #Move this later
+  matchProb <- function(fit,node,covs){
+    
+    if(node=="W"){
+      uniq<-fit$combW
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }else if(node=="A"){
+      uniq<-fit$combA
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }else if(node=="Y"){
+      uniq<-fit$combY
+      test<-!is.na(prodlim::row.match(uniq[,-ncol(uniq)], covs))
+      prob<-uniq[test,ncol(uniq)]
+    }
+    
+    return(prob)
+  }
+  
   # How many in a batch:
   step <- fit$step
   
@@ -219,10 +239,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         if (node == "A") {
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
               #Save the obtained newA in place of new.
@@ -234,17 +254,16 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- stats::rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
                 data_lag[i + 1, 1]<-newA
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+              prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+              newA <- stats::rbinom(1, 1, prob)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA 
               }else{
                 data_lag[i + 1, 1]<-newA
@@ -253,10 +272,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           }
           
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY
           }else{
@@ -268,7 +287,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Now we skip both W and A, start generating MC draws from Y.
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
             data_lag[(i + 3 + (lag*step)), 1] <- newY
@@ -281,7 +301,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Don't skip anything, start with W.
           # Update for A
-          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+          prob<-matchProb(fit,node="W",data_lag[i, ])
+          newW <- stats::rbinom(1, 1, prob)
           
           if((i + 1 + (lag*step))>0){
             data_lag[(i + 1 + (lag*step)), 1] <- newW 
@@ -291,10 +312,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA 
             }else{
@@ -306,7 +327,6 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -314,10 +334,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+              prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+              newA <- stats::rbinom(1, 1, prob)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -328,10 +348,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Update for next W
           # In the last iteration this will be NA... This is ok for now, just one more row.
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+          newY <- stats::rbinom(1, 1, prob)
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY 
           }else{
@@ -347,7 +367,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         # MC draws start from "start" and W node.
         
         # Update for A
-        newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+        prob<-matchProb(fit,node="W",data_lag[i, ])
+        newW <- stats::rbinom(1, 1, prob)
         
         if((i + 1 + (lag*step))>0){
           data_lag[(i + 1 + (lag*step)), 1] <- newW
@@ -359,10 +380,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         #Intervention=NULL
         if (is.null(intervention)) {
           # Update for Y
-          newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+          prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+          newA <- stats::rbinom(1, 1, prob)
           
           if((i + 2 + (lag*step))>0){
-            
             data_lag[(i + 2 + (lag*step)), 2] <- newW
             data_lag[(i + 2 + (lag*step)), 1] <- newA
           }else{
@@ -385,10 +406,10 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
             #There is an intervention but not in this batch  
           } else {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            prob<-matchProb(fit,node="A",data_lag[i + 1, ])
+            newA <- stats::rbinom(1, 1, prob)
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
@@ -399,7 +420,8 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         
         # Update for next W
         # In the last iteration this will be NA... This is ok for now, just one more row.
-        newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+        prob<-matchProb(fit,node="Y",data_lag[i + 2, ])
+        newY <- stats::rbinom(1, 1, prob)
         
         if((i + 3 + (lag*step))>0){
           data_lag[(i + 3 + (lag*step)), 2] <- newA
@@ -520,3 +542,4 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
   }
   
 }
+
