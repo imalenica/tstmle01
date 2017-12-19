@@ -64,7 +64,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
  
     iter <- iter + 1
     
-    # Calculate the clever covariate using the updated probabilities
+    # Calculate the clever covariate
     clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
                          B = B, N = N, MC = MC)
 
@@ -132,8 +132,13 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     fit$combY<-unique_Y_comb
   }
 
+  # Get final estimate at time t, for a parameter that does not average across batches.
+  # TO DO: implement the J-type parameter. Better for actually stationary data!
+  psi <- data[(step * (t + 1)), ]
+  Psi<-rep(psi,nrow(data))
+  
   # Update EIC:
-  IC <- clevCov$Dbar
+  IC <- clevCov$Dbar - Psi
 
   # Finite sample variance of the estimator.
   var_tmle <- stats::var(IC, na.rm = TRUE) / length(IC)
@@ -141,15 +146,12 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
   # Standard error
   se_tmle <- sqrt(var_tmle)
 
-  # Get final estimate at time t, for a parameter that does not average across batches.
-  # TO DO: implement the J-type parameter. Better for actually stationary data!
-  psi <- data[(step * (t + 1)), ]
-
   # Add CI for estimate
   ci_low <- psi - (stats::qnorm(1 - (alpha / 2))) * se_tmle
   ci_high <- psi + (stats::qnorm(1 - (alpha / 2))) * se_tmle
 
   return(list(psi = psi, var.psi = var_tmle,
-              CI = list(CI_lower = ci_low, CI_upper = ci_high), IC = IC))
+              CI = list(CI_lower = ci_low, CI_upper = ci_high), IC = IC),
+              conv = abs(epsilon) <= tol, iter=iter)
 }
 

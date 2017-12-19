@@ -47,8 +47,8 @@ initEst <- function(data, t, freqW = NULL, freqA = NULL, freqY = NULL) {
     data_orig<-data
     
     names<-row.names(data)
-    data<-data.frame(data=data[1:(step*n),])
-    row.names(data)<-names[1:(step*n)]
+    data<-data.frame(data=data[1:((step*n)+step),])
+    row.names(data)<-names[1:((step*n)+step)]
     
     # Lag past
     res <- lapply(seq_len(freqW), function(x) {
@@ -86,6 +86,7 @@ initEst <- function(data, t, freqW = NULL, freqA = NULL, freqY = NULL) {
     probA<-data.frame(prob=stats::predict(fitA,A_est,type = "response"))  
     probY<-data.frame(prob=stats::predict(fitY,Y_est,type = "response"))  
     
+    #TO DO: Cases where we don't have enough data to estimate all probabilities
     #Create a file that has probabilities and lag combinations:
     W_comb<-cbind.data.frame(W_est,probW)
     A_comb<-cbind.data.frame(A_est,probA)

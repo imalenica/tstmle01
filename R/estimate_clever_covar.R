@@ -210,6 +210,7 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
     hw_res[i, ] <- h_init$h_cw
 
     # Save sums for h^*
+    #As long as i=s is out there, it will be >1
     hy_star_res[i, ] <- hy_star
     ha_star_res[i, ] <- ha_star
     hw_star_res[i, ] <- hw_star
