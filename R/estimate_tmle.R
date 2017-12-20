@@ -73,7 +73,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     Ha <- clevCov$Ha
     Hw <- clevCov$Hw
 
-    # Get the EIC:
+    # Get the non-centered EIC:
     D <- clevCov$Dbar
     
     Y <- matrix(nrow = n, ncol = 1)
@@ -126,11 +126,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     row.names(unique_A_comb)<-NULL
     unique_Y_comb<-unique(Y_comb)
     row.names(unique_Y_comb)<-NULL
-    
-    fit$combW<-unique_W_comb
-    fit$combA<-unique_A_comb
-    fit$combY<-unique_Y_comb
-    
+
     #Update log odds
     Y_odd <- data.frame(data=stats::qlogis(Y_pred) + eps * Hy)
     A_odd <- data.frame(data=stats::qlogis(A_pred) + eps * Ha)

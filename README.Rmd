@@ -22,18 +22,14 @@ knitr::opts_chunk$set(
 
 ## What's `tstmle01`?
 
-This package provides basic implementation of the targeted maximum likelihood estimation of causal
-effects based on the observation of a single binary time series. The approach considers the case where at each time point in a time series, a covariate vector, treatment, and outcome are observed in chronological order. A family of causal effects are defined as the impacts of
-stochastic interventions on a subset of the treatment nodes on a future outcome.
+The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of the marginal causal effect based on the observation of a single binary time-series [@c1]. Current implementation supports iterative TMLE; check back for one-step and online TMLE [@c4], [@c5]. For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). In particular, [tstmle](https://github.com/podTockom/tstmle/) implements the data-dependent, $C_{o(t)}$-specific, causal effect and the adaptive design for learning the optimal treatment rule within a single time series [@c2]. Here, initial estimation is based on the [sl3](https://github.com/jeremyrcoyle/sl3) package, which constructs ensemble models with proven optimality properties for time-series data [@c3].
 
-This general formulation of the statistical estimation problem subsumes many
+We emphasize that this general formulation of the statistical estimation problem subsumes many
 other important estimation problems, including but not limited to classical time
 series models, group sequential adaptive designs, and even independent and
-identically distributed data where the summary measure of the past is simply the
+identically distributed data when the summary measure of the past is simply the
 empty set. 
-
-For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).  
-
+  
 ---
 
 ## Installation

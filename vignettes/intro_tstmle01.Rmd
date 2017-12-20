@@ -3,8 +3,9 @@ title: "TMLE of Causal Effects of Interventions on a Single Binary Time Series"
 author: "Ivana Malenica"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
+bibliography: intro_tstmle01.bib
 vignette: >
-  %\VignetteIndexEntry{TMLE of Causal Effects of Interventions on a Single Binary Time Seriess}
+  %\VignetteIndexEntry{TMLE of Causal Effects of Interventions on a Single Binary Time Series}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,8 +16,7 @@ options(warn = FALSE)
 
 ## Introduction
 
-The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of causal
-effects based on the observation of a single binary time-series. Current implementation supports iterative TMLE; check back for one-step and online TMLE. For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). 
+The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of the marginal causal effect based on the observation of a single binary time-series [@c1]. Current implementation supports iterative TMLE; check back for one-step and online TMLE [@c4], [@c5]. For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). In particular, [tstmle](https://github.com/podTockom/tstmle/) implements the data-dependent, $C_{o(t)}$-specific, causal effect and the adaptive design for learning the optimal treatment rule within a single time series [@c2]. Here, initial estimation is based on the [sl3](https://github.com/jeremyrcoyle/sl3) package, which constructs ensemble models with proven optimality properties for time-series data [@c3].
 
 We emphasize that this general formulation of the statistical estimation problem subsumes many
 other important estimation problems, including but not limited to classical time
@@ -55,7 +55,7 @@ $$
 
 where $g_0^*$ is a baseline treatment regime on the intervention nodes $A(\mathcal{I}) = (A(t) : t \in \mathcal{I})$.
 
-A key feature of the estimation problem is that data is dependent and statistical inference is based on asymptotics in time.This is a unique and powerful result as it estimates the causal effect based on a single time series, and without the need for a control time series.  
+A key feature of the estimation problem is that data is dependent and statistical inference is based on asymptotics in time.This is a unique and powerful result as it estimates the causal effect based on a single time series, and without the need for a control time series. 
 
 ---
 

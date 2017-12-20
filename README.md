@@ -10,11 +10,9 @@ R/`tstmle01`
 What's `tstmle01`?
 ------------------
 
-This package provides basic implementation of the targeted maximum likelihood estimation of causal effects based on the observation of a single binary time series. The approach considers the case where at each time point in a time series, a covariate vector, treatment, and outcome are observed in chronological order. A family of causal effects are defined as the impacts of stochastic interventions on a subset of the treatment nodes on a future outcome.
+The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of the marginal causal effect based on the observation of a single binary time-series (van der Laan and Rose 2017). Current implementation supports iterative TMLE; check back for one-step and online TMLE (van der Laan and Gruber 2016), (van der Laan and Lendle 2014). For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). In particular, [tstmle](https://github.com/podTockom/tstmle/) implements the data-dependent, *C*<sub>*o*(*t*)</sub>-specific, causal effect and the adaptive design for learning the optimal treatment rule within a single time series (van der Laan and Malenica 2018). Here, initial estimation is based on the [sl3](https://github.com/jeremyrcoyle/sl3) package, which constructs ensemble models with proven optimality properties for time-series data (Malenica and van der Laan 2018).
 
-This general formulation of the statistical estimation problem subsumes many other important estimation problems, including but not limited to classical time series models, group sequential adaptive designs, and even independent and identically distributed data where the summary measure of the past is simply the empty set.
-
-For the (faster) R package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/).
+We emphasize that this general formulation of the statistical estimation problem subsumes many other important estimation problems, including but not limited to classical time series models, group sequential adaptive designs, and even independent and identically distributed data when the summary measure of the past is simply the empty set.
 
 ------------------------------------------------------------------------
 
@@ -85,3 +83,13 @@ The contents of this repository are distributed under the MIT license. See below
 
 References
 ----------
+
+Malenica, Ivana, and Mark J van der Laan. 2018. “Oracle Inequality for Cross-Validation Estimator Selector for Dependent Time-Ordered Experiments.”
+
+van der Laan, Mark J, and Susan Gruber. 2016. “One-Step Targeted Minimum Loss-Based Estimation Based on Universal Least Favorable One-Dimensional Submodels.” Working Paper 347. U.C. Berkeley Division of Biostatistics Working Paper Series.
+
+van der Laan, Mark J, and Samuel D Lendle. 2014. “Online Targeted Learning.” Working Paper 330. U.C. Berkeley Division of Biostatistics Working Paper Series.
+
+van der Laan, Mark J, and Ivana Malenica. 2018. “Robust Estimation of Data-Dependent Causal Effects Based on Observing a Single Time-Series.”
+
+van der Laan, Mark J, and Sherri Rose. 2017. *Targeted Learning in Data Science: Causal Inference for Complex Longitudinal Studies*. Springer Science & Business Media.
