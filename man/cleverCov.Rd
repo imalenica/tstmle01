@@ -5,7 +5,7 @@
 \title{Clever Covariate calculation}
 \usage{
 cleverCov(fit, t, Anode, intervention = NULL, B = 100, N = 100,
-  MC = 100)
+  MC = 100, update = FALSE)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -21,6 +21,8 @@ cleverCov(fit, t, Anode, intervention = NULL, B = 100, N = 100,
 \item{N}{How many sample to draw from %P^*, as part of the h-density estimation.}
 
 \item{MC}{How many Monte Carlo samples should be generated.}
+
+\item{update}{\code{TRUE}, use updated fits to get Monte Carlo draws.}
 }
 \value{
 An object of class \code{tstmle01}.

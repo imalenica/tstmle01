@@ -23,6 +23,7 @@
 #'  clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.
 #' @param set Set the s node to either 1 or 0. Used for the clever covariate calculation.
 #' @param full \code{TRUE} if full time-series should be used.
+#' @param update \code{TRUE}, use updated fits to get Monte Carlo draws.
 #'
 #' @return An object of class \code{tstmle01}.
 #' \describe{
@@ -46,7 +47,7 @@
 
 mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag = 0, 
                   MC=100, returnMC = FALSE, returnMC_full = FALSE, clevCov = FALSE, set = NULL, 
-                  full=FALSE) {
+                  full=FALSE, update=FALSE) {
   
   # Checks
   if (start < lag) {
@@ -219,10 +220,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         if (node == "A") {
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+            if(update==TRUE){
+              newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A,data_lag[i + 1, ],type = "response")))
+            }else{
+              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response")) 
+            }
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
               #Save the obtained newA in place of new.
@@ -234,17 +238,19 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- stats::rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
                 data_lag[i + 1, 1]<-newA
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+              if(update==TRUE){
+                newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A,data_lag[i + 1, ],type = "response")))
+              }else{
+                newA <- stats::rbinom(1, 1, stats::predict(fit$A,data_lag[i + 1, ],type = "response"))
+              }
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 1] <- newA 
               }else{
                 data_lag[i + 1, 1]<-newA
@@ -253,10 +259,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           }
           
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
+          if(update==TRUE){
+            newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y,data_lag[i + 2, ],type = "response")))
+          }else{
+            newY <- stats::rbinom(1, 1, stats::predict(fit$Y,data_lag[i + 2, ],type = "response"))
+          }
           
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY
           }else{
@@ -268,8 +277,12 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Now we skip both W and A, start generating MC draws from Y.
           # Update for next W
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
-          
+          if(update==TRUE){
+            newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y, data_lag[i + 2, ], type = "response")))
+          }else{
+            newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          }
+
           if((i + 3 + (lag*step))>0){
             data_lag[(i + 3 + (lag*step)), 1] <- newY
           }else{
@@ -281,7 +294,11 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Don't skip anything, start with W.
           # Update for A
-          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+          if(update==TRUE){
+            newW <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$W, data_lag[i, ], type = "response")))
+          }else{
+            newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+          }
           
           if((i + 1 + (lag*step))>0){
             data_lag[(i + 1 + (lag*step)), 1] <- newW 
@@ -291,10 +308,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           if (is.null(intervention)) {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            if(update==TRUE){
+              newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A, data_lag[i + 1, ], type = "response")))
+            }else{
+              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            }
             
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA 
             }else{
@@ -306,7 +326,6 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               newA <- rbinom(1, 1, intervention)
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -314,10 +333,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
               }
             } else {
               # Update for Y
-              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+              if(update==TRUE){
+                newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A, data_lag[i + 1, ], type = "response")))
+              }else{
+                newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+              }
               
               if((i + 2 + (lag*step))>0){
-                
                 data_lag[(i + 2 + (lag*step)), 2] <- newW
                 data_lag[(i + 2 + (lag*step)), 1] <- newA
               }else{
@@ -328,10 +350,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
           
           # Update for next W
           # In the last iteration this will be NA... This is ok for now, just one more row.
-          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
-          
+          if(update==TRUE){
+            newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y, data_lag[i + 2, ], type = "response")))
+          }else{
+            newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+          }
+
           if((i + 3 + (lag*step))>0){
-            
             data_lag[(i + 3 + (lag*step)), 2] <- newA
             data_lag[(i + 3 + (lag*step)), 1] <- newY 
           }else{
@@ -347,8 +372,12 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         # MC draws start from "start" and W node.
         
         # Update for A
-        newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
-        
+        if(update==TRUE){
+          newW <- stats::rbinom(1, 1, stats:plogis(stats::predict(fit$W, data_lag[i, ], type = "response")))
+        }else{
+          newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
+        }
+
         if((i + 1 + (lag*step))>0){
           data_lag[(i + 1 + (lag*step)), 1] <- newW
           data_lag[(i + 1 + (lag*step)), 2] <- newY 
@@ -359,10 +388,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         #Intervention=NULL
         if (is.null(intervention)) {
           # Update for Y
-          newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
-          
+          if(update==TRUE){
+            newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A, data_lag[i + 1, ], type = "response")))
+          }else{
+            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+          }
+
           if((i + 2 + (lag*step))>0){
-            
             data_lag[(i + 2 + (lag*step)), 2] <- newW
             data_lag[(i + 2 + (lag*step)), 1] <- newA
           }else{
@@ -385,10 +417,13 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
             #There is an intervention but not in this batch  
           } else {
             # Update for Y
-            newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
-            
+            if(update==TRUE){
+              newA <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$A, data_lag[i + 1, ], type = "response")))
+            }else{
+              newA <- stats::rbinom(1, 1, stats::predict(fit$A, data_lag[i + 1, ], type = "response"))
+            }
+
             if((i + 2 + (lag*step))>0){
-              
               data_lag[(i + 2 + (lag*step)), 2] <- newW
               data_lag[(i + 2 + (lag*step)), 1] <- newA
             }else{
@@ -399,8 +434,12 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         
         # Update for next W
         # In the last iteration this will be NA... This is ok for now, just one more row.
-        newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
-        
+        if(update==TRUE){
+          newY <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$Y, data_lag[i + 2, ], type = "response")))
+        }else{
+          newY <- stats::rbinom(1, 1, stats::predict(fit$Y, data_lag[i + 2, ], type = "response"))
+        }
+
         if((i + 3 + (lag*step))>0){
           data_lag[(i + 3 + (lag*step)), 2] <- newA
           data_lag[(i + 3 + (lag*step)), 1] <- newY 

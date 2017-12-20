@@ -6,7 +6,7 @@
 \usage{
 mcEst(fit, start = 1, node = "W", t, Anode, intervention = NULL,
   lag = 0, MC = 100, returnMC = FALSE, returnMC_full = FALSE,
-  clevCov = FALSE, set = NULL)
+  clevCov = FALSE, set = NULL, full = FALSE, update = FALSE)
 }
 \arguments{
 \item{fit}{\code{fit} object obtained by \code{initEst}.}
@@ -38,6 +38,10 @@ Also, note that lag should be equal or smaller than start.}
 clever covariate. Instead of observed data, it used intervened %P^* for further MC draws.}
 
 \item{set}{Set the s node to either 1 or 0. Used for the clever covariate calculation.}
+
+\item{full}{\code{TRUE} if full time-series should be used.}
+
+\item{update}{\code{TRUE}, use updated fits to get Monte Carlo draws.}
 }
 \value{
 An object of class \code{tstmle01}.

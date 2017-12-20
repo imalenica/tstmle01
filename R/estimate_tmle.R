@@ -64,9 +64,15 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
  
     iter <- iter + 1
     
-    # Calculate the clever covariate with the new fit
-    clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
-                         B = B, N = N, MC = MC)
+    if(iter==1){
+      # Calculate the clever covariate with the initial fit
+      clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
+                           B = B, N = N, MC = MC)
+    }else{
+      # Calculate the clever covariate with the new fit
+      clevCov <- cleverCov(fit, t = t, Anode = Anode, intervention = intervention, 
+                           B = B, N = N, MC = MC, update=TRUE)
+    }
 
     # Get all the clever covariates:
     Hy <- clevCov$Hy
