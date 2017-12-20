@@ -373,7 +373,7 @@ mcEst <- function(fit, start = 1, node = "W", t, Anode, intervention = NULL, lag
         
         # Update for A
         if(update==TRUE){
-          newW <- stats::rbinom(1, 1, stats:plogis(stats::predict(fit$W, data_lag[i, ], type = "response")))
+          newW <- stats::rbinom(1, 1, stats::plogis(stats::predict(fit$W, data_lag[i, ], type = "response")))
         }else{
           newW <- stats::rbinom(1, 1, stats::predict(fit$W, data_lag[i, ], type = "response"))
         }

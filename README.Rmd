@@ -22,9 +22,9 @@ knitr::opts_chunk$set(
 
 ## What's `tstmle01`?
 
-The `tstmle01` package implements the targeted maximum likelihood estimation (TMLE) of the marginal causal effect based on the observation of a single binary time-series [@c1]. Current implementation supports iterative TMLE; check back for one-step and online TMLE [@c4], [@c5]. 
+The `tstmle01` package implements targeted maximum likelihood estimation (TMLE) of the marginal causal effect based on the observation of a single binary time-series [@c1]. Current implementation supports iterative TMLE; check back for one-step and online TMLE [@c4], [@c5]. 
 
-For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). In particular, [tstmle](https://github.com/podTockom/tstmle/) implements the data-dependent, $C_{o(t)}$-specific, causal effect and the adaptive design for learning the optimal treatment rule within a single time series [@c2]. Here, initial estimation is based on the [sl3](https://github.com/jeremyrcoyle/sl3) package, which constructs ensemble models with proven optimality properties for time-series data [@c3].
+For the (faster) package implementing a more general methodology and other time-series based target parameters, see [tstmle](https://github.com/podTockom/tstmle/). In particular, [tstmle](https://github.com/podTockom/tstmle/) implements the data-dependent, $C_{o(t)}-$ specific, causal effect and the adaptive design for learning the optimal treatment rule within a single time series [@c2]. Here, initial estimation is based on the [sl3](https://github.com/jeremyrcoyle/sl3) package, which constructs ensemble models with proven optimality properties for time-series data [@c3].
 
 We emphasize that this general formulation of the statistical estimation problem subsumes many
 other important estimation problems, including but not limited to classical time

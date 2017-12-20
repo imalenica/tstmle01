@@ -227,7 +227,7 @@ cleverCov <- function(fit, t, Anode, intervention = NULL, B = 100, N = 100, MC =
             
             #W
             Hw1 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
-                         lag = 0, MC = MC, clevCov = TRUE, set = 1,update=TRUE)
+                         lag = 0, MC = MC, clevCov = TRUE, set = 1, update=TRUE)
             Hw0 <- mcEst(fit, start = s, node = "A", t = t, Anode = Anode,
                          lag = 0, MC = MC, clevCov = TRUE, set = 0,update=TRUE)
             Hw_diff_add <- Hw1$estimate - Hw0$estimate
