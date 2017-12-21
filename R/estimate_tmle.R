@@ -106,11 +106,22 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
 
     # Put all in one dataframe:
     observed <- data.frame(X = c(Y, A, W))
-    pred <- data.frame(off = c(Y_pred, A_pred, W_pred))
+    if(iter==1){
+      pred <- data.frame(off = c(Y_pred, A_pred, W_pred))
+    }else{
+      #Returns log odds, essentially.
+      Y_pred<-exp(Y_pred)/(1+exp(Y_pred))
+      A_pred<-exp(A_pred)/(1+exp(A_pred))
+      W_pred<-exp(W_pred)/(1+exp(W_pred))
+
+      pred <- data.frame(off = c(Y_pred, A_pred, W_pred))
+    }
+    
     H <- data.frame(H = c(Hy, Ha, Hw))
 
     d <- cbind.data.frame(observed, pred, H)
 
+    #off is prob
     eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))[2]
     eps[is.na(eps)] <- 0
 
