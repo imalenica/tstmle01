@@ -122,7 +122,7 @@ mainTMLE <- function(fit, t, Anode, intervention = NULL, alpha = 0.05, B = 100,
     d <- cbind.data.frame(observed, pred, H)
 
     #off is prob
-    eps <- stats::coef(stats::glm(X ~ -1 + stats::offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))[2]
+    eps <- stats::coef(stats::glm(X ~ -1 + offset(stats::qlogis(off)) + H, data = d, family = "quasibinomial"))[2]
     eps[is.na(eps)] <- 0
 
     # Update (probabilities):
